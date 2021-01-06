@@ -11,7 +11,7 @@ plan <- drake_plan(
   # in order of their sent out date
   pt_df = read_in_plain_text(pt_dir),
   
-  pt_fts <- pt_ft_engi(pt_df)
+  pt_fts = pt_ft_engi(pt_df)
   
 )
 

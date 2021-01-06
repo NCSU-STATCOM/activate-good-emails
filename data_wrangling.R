@@ -1,5 +1,4 @@
 
-library(drake)
 library(dplyr)
 library(readtext)
 
@@ -16,15 +15,15 @@ weeklies_input <- read.csv("newsletters/subject_summary_stats.csv", stringsAsFac
 # columns to begin the weekly newsletter data set. 
 # iv is independent variables
 weeklies_iv0 <- weeklies_input[, 1:3] %>% rename(subject = Subject, time = Date, 
-                                                contacts_sent_to = Contacts_Sent_To)
+                                                 contacts_sent_to = Contacts_Sent_To)
 
 # The later newsletters may have their summary statistics change, so the last four columns,
 # Opened, Clicks, Bounces, and Unsubscribes,
 # of subject_summary_stats.csv may need to be updated.
 # dv is dependent variables
 weeklies_dv <- weeklies_input[, -c(1:3)] %>% rename(opened = Opened, clicks = Clicks, 
-                                                   bounces = Bounces, 
-                                                   unsubscribes = Unsubscribes)
+                                                    bounces = Bounces, 
+                                                    unsubscribes = Unsubscribes)
 
 
 
@@ -48,41 +47,28 @@ init_ft_engi <- function(weeklies) {
 
 
 
-first_plan <- drake_plan(
-  
-  weeklies_iv1 = init_ft_engi(weeklies_iv0),
-  
-  weeklies_allv = cbind(weeklies_iv1, weeklies_dv)
-  
-)
+# generating the wrangled data set that is only based on subject_summary_stats.csv
+
+weeklies_iv1 = init_ft_engi(weeklies_iv0)
+
+weeklies1 <- data.frame(weeklies_iv1, weeklies_dv)
+
+save(weeklies1, file = "wrangled_data/weeklies1.RData")
 
 
 
-pt_ft_engi_plan <- drake_plan(
-  
-  pt_dir = file.path("newsletters", "plain_text"), 
-  
-  # read in all the plain-text of the newsletters into a data.frame, 
-  # in order of their sent out date
-  pt_df = read_in_plain_text(pt_dir),
-  
-  pt_fts = pt_ft_engi(pt_df)
-  
-)
+# Including plain-text features
+
+pt_dir <- file.path("newsletters", "plain_text")
+
+# read in all the plain-text of the newsletters into a data.frame, 
+# in order of their sent out date
+pt_df <- read_in_plain_text(pt_dir)
+
+# pt_fts <- pt_ft_engi(pt_df)
 
 
 
-wrangling_plan <- bind_plans(
-  first_plan, 
-  pt_ft_engi_plan)
-
-
-
-config <- drake_config(wrangling_plan)
-
-
-
-make(wrangling_plan)
 
 
 

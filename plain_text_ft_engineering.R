@@ -1,20 +1,5 @@
 
-library(drake)
-library(readtext)
-library(dplyr)
-
-plan <- drake_plan(
-  
-  pt_dir = file.path("newsletters", "plain_text"), 
-  
-  # read in all the plain-text of the newsletters into a data.frame, 
-  # in order of their sent out date
-  pt_df = read_in_plain_text(pt_dir),
-  
-  pt_fts = pt_ft_engi(pt_df)
-  
-)
-
+# functions for plain-text feature engineering
 
 
 
@@ -38,10 +23,11 @@ read_in_plain_text <- function(pt_dir) {
 
 # to-do: number of links, to standardize the click count? 
 
-
-
-make(plan)
-
+pt_ft_engi <- function() {
+  
+  
+  
+}
 
 
 

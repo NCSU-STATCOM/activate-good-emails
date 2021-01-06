@@ -4,3 +4,5 @@
 .Ruserdata
 
 activate_good_project.Rproj
+
+.drake/

@@ -34,11 +34,14 @@ init_ft_engi <- function(weeklies) {
   
   # convert Date into a POSIXlt variable
   
-  weeklies$time <- strptime(weeklies$time, tz = "America/New_York", format = "%m/%d/%y %H:%M")
+  weeklies$time <- as.POSIXct(weeklies$time, tz = "America/New_York", format = "%m/%d/%y %H:%M")
   
   # Feature Engineering
-  # Lengths of the subject headings variable
   
+  # Before the pandemic started changing things, and after
+  weeklies$covid <- ifelse(weeklies$time >= as.POSIXct("2020-03-12"), TRUE, FALSE)
+  
+  # Lengths of the subject headings variable
   weeklies$subject_length <- sapply(weeklies$subject, nchar)
   
   return(weeklies)

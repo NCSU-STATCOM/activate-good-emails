@@ -1,6 +1,8 @@
 
 library(dplyr)
 library(readtext)
+library(lubridate)
+library(arules)
 
 source("plain_text_ft_engineering.R")
 
@@ -38,8 +40,12 @@ init_ft_engi <- function(weeklies) {
   
   # Feature Engineering
   
+  # Time Features
   # Before the pandemic started changing things, and after
   weeklies$covid <- ifelse(weeklies$datetime < as.POSIXct("2020-03-12"), "Before", "After")
+  
+  # number of minutes since midnight
+  weeklies$mins_since_midnight <- hour(weeklies$datetime) * 60 + minute(weeklies$datetime)
   
   # Lengths of the subject headings variable
   weeklies$subject_length <- sapply(weeklies$subject, nchar)
@@ -60,15 +66,15 @@ save(weeklies1, file = "wrangled_data/weeklies1.RData")
 
 
 
-# Including plain-text features
-
-pt_dir <- file.path("newsletters", "plain_text")
-
-# read in all the plain-text of the newsletters into a data.frame, 
-# in order of their sent out date
-pt_df <- read_in_plain_text(pt_dir)
-
-# pt_fts <- pt_ft_engi(pt_df)
+# # Including plain-text features
+# 
+# pt_dir <- file.path("newsletters", "plain_text")
+# 
+# # read in all the plain-text of the newsletters into a data.frame, 
+# # in order of their sent out date
+# pt_df <- read_in_plain_text(pt_dir)
+# 
+# # pt_fts <- pt_ft_engi(pt_df)
 
 
 

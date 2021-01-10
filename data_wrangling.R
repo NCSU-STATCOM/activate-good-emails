@@ -14,7 +14,7 @@ weeklies_input <- read.csv("newsletters/subject_summary_stats.csv", stringsAsFac
 # The first three columns, Subject, Date, and Contacts_Sent_To, will not change. Thus, I use just those 
 # columns to begin the weekly newsletter data set. 
 # iv is independent variables
-weeklies_iv0 <- weeklies_input[, 1:3] %>% rename(subject = Subject, time = Date, 
+weeklies_iv0 <- weeklies_input[, 1:3] %>% rename(subject = Subject, datetime = Date, 
                                                  contacts_sent_to = Contacts_Sent_To)
 
 # The later newsletters may have their summary statistics change, so the last four columns,
@@ -34,12 +34,12 @@ init_ft_engi <- function(weeklies) {
   
   # convert Date into a POSIXlt variable
   
-  weeklies$time <- as.POSIXct(weeklies$time, tz = "America/New_York", format = "%m/%d/%y %H:%M")
+  weeklies$datetime <- as.POSIXct(weeklies$datetime, tz = "America/New_York", format = "%m/%d/%y %H:%M")
   
   # Feature Engineering
   
   # Before the pandemic started changing things, and after
-  weeklies$covid <- ifelse(weeklies$time >= as.POSIXct("2020-03-12"), TRUE, FALSE)
+  weeklies$covid <- ifelse(weeklies$datetime < as.POSIXct("2020-03-12"), "Before", "After")
   
   # Lengths of the subject headings variable
   weeklies$subject_length <- sapply(weeklies$subject, nchar)

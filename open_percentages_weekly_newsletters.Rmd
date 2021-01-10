@@ -5,7 +5,9 @@ date: "1/9/2021"
 output: pdf_document
 ---
 
+The open percentage is 
 
+$$\mathrm{Open \ \%} = \frac{\mathrm{number \ of \ contacts \ who \ opened \ the \ email}}{\mathrm{number \ of \ contacts \ sent \ to}}$$
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -18,27 +20,42 @@ library(scales)
 
 
 
+
 ```{r}
 load("wrangled_data/weeklies1.RData")
 ```
 
 ```{r}
-weeklies1$time <- as.POSIXct(weeklies1$time)
-```
-
-```{r}
-ggplot(data = weeklies1, aes(x = time, y = opened)) + 
+ggplot(data = weeklies1, aes(x = time, y = contacts_sent_to)) + 
   geom_point() + 
-  geom_smooth() + 
-  ggtitle("Open Percentage over Time, 2019-2020") + 
+  ggtitle("Number of Contacts Sent To over Time, 2019-2020") + 
   xlab("Month") +
-  ylab("Open Percentage")
+  ylab("Number of Contacts Sent To") +
+  geom_smooth() +
   scale_x_datetime(labels = date_format("%m/%y"), 
                breaks = date_breaks("2 month"))
   
 ```
 
+When did the pandemic start changing things? The March 12 weekly newsletter was the first one to mention the COVID-19 pandemic and remote volunteering opportunities. 
 
+```{r}
+ggplot(data = weeklies1, aes(x = time, y = opened)) + 
+  geom_point() + 
+  ggtitle("Open Percentage over Time, 2019-2020") + 
+  xlab("Month") +
+  ylab("Open Percentage") +
+  scale_x_datetime(labels = date_format("%m/%y"), 
+               breaks = date_breaks("2 month")) + 
+  geom_vline(xintercept = as.POSIXct("2020-03-01"), col = "red")
+  
+```
+
+There is a spike in the open percentages after March. 
+
+
+
+<!-- Explore the precise time newsletters were sent--morning, noon, evening -->
 
 
 

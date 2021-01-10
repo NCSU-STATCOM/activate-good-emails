@@ -1,0 +1,49 @@
+---
+title: "Open Percentages for Weekly Newsletters"
+author: "Alvin Sheng"
+date: "1/9/2021"
+output: pdf_document
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+library(ggplot2)
+library(scales)
+```
+
+
+
+```{r}
+load("wrangled_data/weeklies1.RData")
+```
+
+```{r}
+weeklies1$time <- as.POSIXct(weeklies1$time)
+```
+
+```{r}
+ggplot(data = weeklies1, aes(x = time, y = opened)) + 
+  geom_point() + 
+  geom_smooth() + 
+  ggtitle("Open Percentage over Time, 2019-2020") + 
+  xlab("Month") +
+  ylab("Open Percentage")
+  scale_x_datetime(labels = date_format("%m/%y"), 
+               breaks = date_breaks("2 month"))
+  
+```
+
+
+
+
+
+<!-- Repeat for monthly donor newsletters -->
+
+
+
+

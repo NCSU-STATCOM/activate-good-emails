@@ -15,6 +15,7 @@ knitr::opts_chunk$set(echo = FALSE)
 ```{r}
 library(ggplot2)
 library(scales)
+library(lubridate)
 ```
 
 ```{r}
@@ -82,13 +83,42 @@ ggplot(data = weeklies1, aes(x = datetime, y = unsubscribes, col = covid)) +
 
 
 
-# Summary Statistics over Time, during the day
+# Summary Statistics throughout a Day
 
 ```{r}
-time <- format(weeklies1$datetime, format = "%H:%M")
-
-sort(unique(time))
+# extracting the time
+# this sets all the dates to 2021-01-10
+daytime <- as.POSIXct(format(weeklies1$datetime, format="%H:%M"),
+                    tz = "America/New_York", format = "%H:%M")
 ```
+
+```{r}
+weeklies_before <- weeklies1[weeklies1$covid == "Before",]
+weeklies_after <- weeklies1[weeklies1$covid == "After",]
+```
+
+<!-- ```{r} -->
+<!-- ggplot(data = weeklies_after, aes(x = mins_since_midnight, y = opened)) +  -->
+<!--   geom_point() +  -->
+<!--   ggtitle("Open Percentage throughout a Day") +  -->
+<!--   xlab("Time") + -->
+<!--   ylab("Open %") + -->
+<!--   geom_smooth() #+ -->
+<!--   #scale_x_datetime(labels = date_format("%m/%y"),  -->
+<!--                #breaks = date_breaks("2 month")) -->
+<!-- ``` -->
+
+```{r}
+ggplot(data = weeklies1, aes(x = daytime, y = opened, col = covid)) + 
+  geom_point() + 
+  ggtitle("Open Percentage throughout a Day") + 
+  xlab("Time") +
+  ylab("Open %") +
+  geom_smooth(aes(group = 1)) # +
+  # scale_x_datetime(breaks = date_breaks("1 hour"), labels = date_format("%H:%M"))
+```
+
+There may be a slight upward trend. 
 
 
 

@@ -50,6 +50,9 @@ init_ft_engi <- function(weeklies) {
   # Lengths of the subject headings variable
   weeklies$subject_length <- sapply(weeklies$subject, nchar)
   
+  # Number of words in the subject
+  weeklies$subject_num_words <- lengths(strsplit(weeklies$subject, " "))
+  
   return(weeklies)
   
 }

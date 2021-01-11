@@ -1,6 +1,5 @@
 ---
 title: "Analysis of Weekly Newsletters: Initial Report"
-author: "Alvin Sheng"
 output: pdf_document
 ---
 
@@ -10,17 +9,32 @@ $$\mathrm{Open \ \%} = \frac{\mathrm{number \ of \ contacts \ who \ opened \ the
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
 ```
 
 ```{r}
 library(ggplot2)
 library(scales)
 library(lubridate)
+library(GGally)
 ```
 
 ```{r}
 load("wrangled_data/weeklies1.RData")
 ```
+
+# Correlation of the Metrics
+
+```{r}
+metrics <- weeklies1[, names(weeklies1) %in% c("opened", "clicks", "bounces", "unsubscribes")]
+```
+
+```{r}
+ggpairs(metrics, title = "Correlogram of the Metrics")
+```
+
+
+
 
 # Summary Statistics over Time, 2019-2020
 
@@ -28,7 +42,7 @@ load("wrangled_data/weeklies1.RData")
 ggplot(data = weeklies1, aes(x = datetime, y = contacts_sent_to)) + 
   geom_point() + 
   ggtitle("Number of Contacts Sent To over Time, 2019-2020") + 
-  xlab("Month") +
+  xlab("Month/Year") +
   ylab("Number of Contacts Sent To") +
   geom_smooth() +
   scale_x_datetime(labels = date_format("%m/%y"), 
@@ -41,9 +55,9 @@ When did the pandemic start changing things? The March 12 weekly newsletter was 
 ```{r}
 ggplot(data = weeklies1, aes(x = datetime, y = opened, col = covid)) + 
   geom_point() + 
-  ggtitle("Open Percentage over Time, 2019-2020") + 
-  xlab("Month") +
-  ylab("Open Percentage") +
+  ggtitle("Open % over Time, 2019-2020") + 
+  xlab("Month/Year") +
+  ylab("Open %") +
   geom_smooth() +
   scale_x_datetime(labels = date_format("%m/%y"), 
                breaks = date_breaks("2 month")) + 
@@ -51,16 +65,16 @@ ggplot(data = weeklies1, aes(x = datetime, y = opened, col = covid)) +
   
 ```
 
-There is a spike in the open percentages after March. 
+There is a spike in the open % after March. 
 
 
 
 ```{r}
 ggplot(data = weeklies1, aes(x = datetime, y = clicks, col = covid)) + 
   geom_point() + 
-  ggtitle("Click Percentage over Time, 2019-2020") + 
-  xlab("Month") +
-  ylab("Click Percentage") +
+  ggtitle("Click % over Time, 2019-2020") + 
+  xlab("Month/Year") +
+  ylab("Click %") +
   geom_smooth() +
   scale_x_datetime(labels = date_format("%m/%y"), 
                breaks = date_breaks("2 month")) + 
@@ -72,9 +86,9 @@ ggplot(data = weeklies1, aes(x = datetime, y = clicks, col = covid)) +
 ```{r}
 ggplot(data = weeklies1, aes(x = datetime, y = unsubscribes, col = covid)) + 
   geom_point() + 
-  ggtitle("Unsubscribe Percentage over Time, 2019-2020") + 
-  xlab("Month") +
-  ylab("Unsubscribe Percentage") +
+  ggtitle("Unsubscribe % over Time, 2019-2020") + 
+  xlab("Month/Year") +
+  ylab("Unsubscribe %") +
   geom_smooth() +
   scale_x_datetime(labels = date_format("%m/%y"), 
                breaks = date_breaks("2 month")) + 
@@ -100,7 +114,7 @@ weeklies_after <- weeklies1[weeklies1$covid == "After",]
 <!-- ```{r} -->
 <!-- ggplot(data = weeklies_after, aes(x = mins_since_midnight, y = opened)) +  -->
 <!--   geom_point() +  -->
-<!--   ggtitle("Open Percentage throughout a Day") +  -->
+<!--   ggtitle("Open % throughout a Day") +  -->
 <!--   xlab("Time") + -->
 <!--   ylab("Open %") + -->
 <!--   geom_smooth() #+ -->
@@ -111,7 +125,7 @@ weeklies_after <- weeklies1[weeklies1$covid == "After",]
 ```{r}
 ggplot(data = weeklies1, aes(x = daytime, y = opened, col = covid)) + 
   geom_point() + 
-  ggtitle("Open Percentage throughout a Day") + 
+  ggtitle("Open % throughout a Day") + 
   xlab("Time") +
   ylab("Open %") +
   geom_smooth(aes(group = 1)) # +
@@ -122,10 +136,49 @@ There may be a slight upward trend.
 
 
 
-<!-- Explore the precise time newsletters were sent--morning, noon, evening -->
+# Effect of Subject Headings
+
+Summary Statistics for number of characters within subject heading
+
+```{r}
+summary(weeklies1$subject_length)
+```
+
+```{r}
+ggplot(data = weeklies1, aes(x = subject_length, y = opened)) + 
+  geom_point() + 
+  ggtitle("Open % by Subject Length") + 
+  xlab("Subject Length in characters") +
+  ylab("Open %")
+```
+
+<!-- ```{r} -->
+<!-- ggplot(data = weeklies1, aes(x = subject_num_words, y = opened)) +  -->
+<!--   geom_point() +  -->
+<!--   ggtitle("Open % by Number of Words in Subject") +  -->
+<!--   xlab("Number of Words in Subject") + -->
+<!--   ylab("Open %") -->
+<!-- ``` -->
+
+Plotting by the number of words yields a similar plot. 
+
+Small speculation: if subject heading is too long, it may not fit in the email browser and thus lead to less opens. 
 
 
 
+# Modeling
+
+```{r}
+weeklies1$covid <- factor(weeklies1$covid, levels = c("Before", "After"))
+```
+
+```{r}
+opens_lm <- lm(opened ~ datetime*covid + mins_since_midnight + subject_length, data = weeklies1)
+```
+
+```{r}
+summary(opens_lm)
+```
 
 
 

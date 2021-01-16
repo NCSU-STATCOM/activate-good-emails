@@ -1,7 +1,0 @@
----
-title: "Most Clicked Links"
-output: html_notebook
----
-These are the most clicked opportunity links. Note that this does not take into account how many times the opportunity was sent out.
-
-

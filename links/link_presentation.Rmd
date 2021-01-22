@@ -1,0 +1,28 @@
+---
+title: "Link Clicks"
+author: "Jimmy Hickey"
+date: "1/17/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Opportunity link click
+
+
+```{r echo=FALSE}
+library(knitr)
+# library(kableExtra)
+load("../link_df.RData")
+
+# try fixing hyperlinks
+
+link_df$title = paste0("[", link_df$title, "]", "(", link_df$link, ")")
+
+link_df = link_df[c("title", "dates_sent", "click count")]
+
+kable(link_df)
+
+```

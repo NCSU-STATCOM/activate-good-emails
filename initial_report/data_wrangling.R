@@ -4,7 +4,7 @@ library(readtext)
 library(lubridate)
 library(arules)
 
-source("plain_text_ft_engineering.R")
+source("newsletters/plain_text_ft_engineering.R")
 
 
 
@@ -65,7 +65,7 @@ weeklies_iv1 = init_ft_engi(weeklies_iv0)
 
 weeklies1 <- data.frame(weeklies_iv1, weeklies_dv)
 
-save(weeklies1, file = "wrangled_data/weeklies1.RData")
+save(weeklies1, file = "initial_report/weeklies1.RData")
 
 
 

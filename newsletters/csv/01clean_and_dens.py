@@ -22,6 +22,17 @@ raw = path + '/raw'
 inter = path + '/intermediate'
 
 #####################################################
+# Functions
+#####################################################
+
+def zip_fun(x):
+    try:
+        x = int(x)
+    except:
+        x = np.nan
+    return(x)
+
+#####################################################
 # Combine all of the datafiles into one
 #####################################################
 
@@ -38,14 +49,17 @@ for i in range(len(files)):
     # convert date read to datetime object
     temp_file.date = pd.to_datetime(temp_file.date)
     
-
     # create date of when the newsletter was sent
     month = int(files[i][0:2])
     day = int(files[i][3:5])
     year = int(files[i][6:8])
-    date = dt.datetime(year, month, day)
-    temp_file['date_sent'] = date.strftime("%m/%d/%y")
-
+    hour = int(files[i][9:11])
+    mnt = int(files[i][12:14])
+    sec = int(files[i][15:17])
+    
+    # datetime(year, month, day, hour, minute, second, microsecond)
+    date = dt.datetime(year, month, day, hour, mnt, sec)
+    temp_file['date_sent'] = date.strftime("%m/%d/%y %H:%M:%S")
     
     # append to the all of the other files
     all_files = all_files.append(temp_file)
@@ -60,17 +74,17 @@ all_files.to_csv(inter + '/all_months_201920.csv', index = False)
 # Get the zip codes from some of the addresses
 all_files_clean = all_files.copy()
 
+
     # for those with the comma
 all_files_clean['zip_start'] = all_files.address1.str.find(', NC 27')
 zc = all_files_clean[all_files_clean.zip_start.notna() & (all_files_clean.zip_start > 0)].copy()
 zc_min = zc[['subscriberid' , 'address1', 'zip_start']].drop_duplicates().copy()
 zc_min.zip_start = zc_min.zip_start.astype(int) + 5
 zc_min['zfa1'] = zc_min.apply(lambda zc_min: zc_min['address1'][zc_min['zip_start']:zc_min['zip_start']+5], axis=1)
-    # Check if any aren't the correct length
-zc_min.zfa1.str.len().min()
-zc_min.zfa1.str.len().max()
     # Convert to integer to check that all are numbers
 zc_min.zfa1 = zc_min.zfa1.astype(int)
+    # Check if there are any anomalies
+zc_min.zfa1.min()
     # Save only the necessary information
 zc_min = zc_min[['subscriberid', 'zfa1']].copy()
     # Merge into the entire data  
@@ -82,15 +96,12 @@ zc = merged1[merged1.zfa1.isna() & merged1.address1.notna()].copy()
 zc_min = zc[['subscriberid' , 'address1', 'zip_start']].drop_duplicates().copy()
 zc_min['zfa2'] = zc_min.address1.str[-5:]
     # Fix a typo in the data
-zc_min.zfa2.loc[zc_min.zfa2 == '12616'] = '27616'
-
-for i in range(len(zc_min.zfa2)):
-    try: zc_min.zfa2.iloc[i] = int(zc_min.zfa2.iloc[i])
-    except: zc_min.zfa2.iloc[i] = np.nan
-    
+zc_min.loc[zc_min.zfa2 == '12616', 'zfa2'] = '27616'
+    # Convert the zip codes to numbers
+zc_min['zfa2'] = zc_min['zfa2'].apply(zip_fun)   
     # Remove the PO boxes or apartments
-zc_min.zfa2.loc[zc_min.zfa2 == 2874] = np.nan
-zc_min.zfa2.loc[zc_min.zfa2 == 2633] = np.nan
+zc_min.loc[zc_min.zfa2 == 2874, 'zfa2'] = np.nan
+zc_min.loc[zc_min.zfa2 == 2633, 'zfa2'] = np.nan
     # Save only the necessary information
 zc_min_naomit = zc_min[['subscriberid', 'zfa2']].dropna().copy()
     # Merge into the entire data
@@ -122,16 +133,9 @@ drop_list = ['email', 'fname', 'lname', 'fullname', 'recip', 'status',
 
 final_clean_dens = final_clean.drop(columns = drop_list).copy()
 
+# Drop duplicates
+final_clean_dens = final_clean_dens.drop_duplicates()
+
+
 # output the densitized version of the raw
 final_clean_dens.to_csv(inter + '/all_months_201920_dens.csv', index = False)
-
-
-
-
-
-
-
-
-
-
-

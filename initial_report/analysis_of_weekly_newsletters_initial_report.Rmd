@@ -20,7 +20,7 @@ library(GGally)
 ```
 
 ```{r}
-load("wrangled_data/weeklies1.RData")
+load("weeklies1.RData")
 ```
 
 # Correlation of the Metrics

@@ -1,5 +1,5 @@
 ---
-title: "Link Clicks"
+title: "Unique Link Clicks"
 author: "Jimmy Hickey"
 date: "1/17/2021"
 output: pdf_document
@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Opportunity link click
 
+This table shows the number of unique people that clicked each "opportunity link" (https://activategood.org/opportunity/####) in the newsletters. Click the title of the link to go to the opportunity page.
 
 ```{r echo=FALSE}
 library(knitr)
@@ -19,9 +20,11 @@ load("../link_df.RData")
 
 # try fixing hyperlinks
 
-link_df$title = paste0("[", link_df$title, "]", "(", link_df$link, ")")
+link_df$title = paste0("__[", link_df$title, "]", "(", link_df$link, ")__")
 
 link_df = link_df[c("title", "dates_sent", "click count")]
+
+names(link_df) = c("Title", "Dates Sent", "Click Count")
 
 kable(link_df)
 

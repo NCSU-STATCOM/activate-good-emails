@@ -1,10 +1,7 @@
 
 library(dplyr)
-library(readtext)
 library(lubridate)
 library(arules)
-
-source("newsletters/plain_text_ft_engineering.R")
 
 
 
@@ -43,6 +40,12 @@ init_ft_engi <- function(weeklies) {
   # Time Features
   # Before the pandemic started changing things, and after
   weeklies$covid <- ifelse(weeklies$datetime < as.POSIXct("2020-03-12"), "Before", "After")
+  
+  # sorting the months into different seasons
+  letter_months <- month(weeklies$datetime)
+  weeklies$season <- ifelse(letter_months %in% c(12, 1, 2), "Winter", 
+                            ifelse(letter_months %in% c(3, 4, 5), "Spring", 
+                                   ifelse(letter_months %in% c(6, 7, 8), "Summer", "Fall")))
   
   # number of minutes since midnight
   weeklies$mins_since_midnight <- hour(weeklies$datetime) * 60 + minute(weeklies$datetime)

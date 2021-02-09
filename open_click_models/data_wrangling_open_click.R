@@ -5,7 +5,6 @@ load("initial_report/weeklies1.RData")
 subscriber_agg <- read.csv("newsletters/csv/intermediate/all_files_week_agg.csv", stringsAsFactors = FALSE)
 str(subscriber_agg)
 subscriber_agg$date_sent <- as.POSIXct(subscriber_agg$date_sent, tz = "America/New_York", format = "%Y-%m-%d %H:%M:%S")
-table(subscriber_agg$date_sent)
 unique(subscriber_agg$date_sent)
 
 # include number of characters in the subject, as well as other covariates from 
@@ -35,6 +34,12 @@ subscriber_open <- subset(sub_agg_merged, select = c("date_sent", "subscriberid"
                                                      "week_open"))
 
 subscriber_open$week_open[sub_agg_merged$unsubscribes == 1] <- 0
+
+# make subscriberid and covid into factors
+
+subscriber_open$subscriberid <- as.factor(subscriber_open$subscriberid)
+
+subscriber_open$covid <- factor(subscriber_open$covid, levels = c("Before", "After"))
 
 save(subscriber_open, file = "open_click_models/subscriber_open.RData")
 

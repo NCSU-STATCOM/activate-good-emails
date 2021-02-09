@@ -1,4 +1,6 @@
 
+library(readtext)
+
 # functions for plain-text feature engineering
 
 

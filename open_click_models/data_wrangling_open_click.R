@@ -3,9 +3,7 @@
 load("initial_report/weeklies1.RData")
 
 subscriber_agg <- read.csv("newsletters/csv/intermediate/all_files_week_agg.csv", stringsAsFactors = FALSE)
-str(subscriber_agg)
 subscriber_agg$date_sent <- as.POSIXct(subscriber_agg$date_sent, tz = "America/New_York", format = "%Y-%m-%d %H:%M:%S")
-unique(subscriber_agg$date_sent)
 
 # include number of characters in the subject, as well as other covariates from 
 # subject_summary_stats.csv
@@ -20,7 +18,7 @@ subscriber_agg$date <- format(subscriber_agg$date_sent, format = "%Y-%m-%d")
 
 
 sub_agg_merged <- merge(subscriber_agg, subset(weeklies1,
-                                         select = c("subject", "covid", "mins_since_midnight",
+                                         select = c("subject", "covid", "season", "mins_since_midnight",
                                                     "subject_length", "date")),
                   by = "date")
 
@@ -29,17 +27,30 @@ sub_agg_merged <- merge(subscriber_agg, subset(weeklies1,
 
 # construct 2 dataframes, one for the open model, the other for the click model
 
-subscriber_open <- subset(sub_agg_merged, select = c("date_sent", "subscriberid", "covid", 
+subscriber_open <- subset(sub_agg_merged, select = c("date_sent", "subscriberid", "covid", "season", 
                                                      "mins_since_midnight", "subject_length", 
                                                      "week_open"))
 
 subscriber_open$week_open[sub_agg_merged$unsubscribes == 1] <- 0
 
-# make subscriberid and covid into factors
+# make week_open, subscriberid, season and covid into factors
+
+subscriber_open$week_open <- as.factor(subscriber_open$week_open)
 
 subscriber_open$subscriberid <- as.factor(subscriber_open$subscriberid)
 
 subscriber_open$covid <- factor(subscriber_open$covid, levels = c("Before", "After"))
+
+subscriber_open$season <- factor(subscriber_open$season, levels = c("Winter", "Spring",
+                                                                   "Summer", "Fall"))
+
+# making days_since_start variable because the gamm function needs numeric rather than date
+
+study_start <- as.POSIXct("2019-01-01", tz = "America/New_York", format = "%Y-%m-%d")
+
+subscriber_open$days_since_start <- as.numeric(subscriber_open$date_sent - study_start)
+
+
 
 save(subscriber_open, file = "open_click_models/subscriber_open.RData")
 

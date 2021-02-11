@@ -44,6 +44,8 @@ subscriber_open$covid <- factor(subscriber_open$covid, levels = c("Before", "Aft
 subscriber_open$season <- factor(subscriber_open$season, levels = c("Winter", "Spring",
                                                                    "Summer", "Fall"))
 
+subscriber_open$season_num <- as.numeric(subscriber_open$season)
+
 # making days_since_start variable because the gamm function needs numeric rather than date
 
 study_start <- as.POSIXct("2019-01-01", tz = "America/New_York", format = "%Y-%m-%d")

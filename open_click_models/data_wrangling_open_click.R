@@ -1,4 +1,6 @@
 
+library(lubridate)
+
 # load weeklies1 to merge in the number of characters in subject
 load("initial_report/weeklies1.RData")
 
@@ -40,6 +42,8 @@ subscriber_open$week_open <- as.factor(subscriber_open$week_open)
 subscriber_open$subscriberid <- as.factor(subscriber_open$subscriberid)
 
 subscriber_open$covid <- factor(subscriber_open$covid, levels = c("Before", "After"))
+
+subscriber_open$month <- month(subscriber_open$date_sent)
 
 subscriber_open$season <- factor(subscriber_open$season, levels = c("Winter", "Spring",
                                                                    "Summer", "Fall"))

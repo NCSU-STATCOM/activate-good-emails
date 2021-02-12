@@ -132,7 +132,7 @@ proc.time() - ptm
 
 ptm <- proc.time()
 
-m6 <- bam(week_open ~ covid + s
+m6 <- bam(week_open ~ covid +
             s(days_since_start, by = covid) + 
             s(mins_since_midnight, by = covid) + 
             s(subject_length) + 
@@ -147,6 +147,26 @@ save(m6, file = "open_click_models/m6.RData")
 proc.time() - ptm
 
 # R-sq.(adj) =  0.429 
+
+
+
+ptm <- proc.time()
+
+m7 <- bam(week_open ~ covid +
+          s(days_since_start, by = covid) + 
+            s(month, bs = "cc", by = covid) +
+            s(mins_since_midnight, by = covid) + 
+            s(subject_length) + 
+            s(subscriberid, bs = "re"), 
+          family = "binomial",
+          data = dat_sample, 
+          discrete = TRUE)
+
+save(m7, file = "open_click_models/m7.RData")
+
+proc.time() - ptm
+
+# R-sq.(adj) =  0.399
 
 
 

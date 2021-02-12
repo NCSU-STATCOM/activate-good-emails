@@ -1,33 +1,91 @@
 ---
 title: "Trends in the Open Probability"
-author: "Alvin Sheng"
-date: "2/11/2021"
+author: "STATCOM"
 output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
 ```
 
+```{r}
+library(itsadug)
+library(arules)
+library(ggplot2)
+library(knitr)
+library(dplyr)
+library(gglorenz)
+```
 
+```{r}
+load("subscriber_open.RData")
+```
 
-# Lorenz Curves
+# Lorenz Curve
 
+```{r}
+subscrib_num_open <- subscriber_open %>% group_by(subscriberid) %>% summarise(num_open = sum(week_open == 1))
+```
 
+The Gini Index ranges from 0 to 1, with 1 being perfect inequality. In this case, the distribution of opens among the subscribers seems unequal; according to the curve, the top 25% of people account for 75% of opens. 
 
-<!-- # Exploring the Dataset -->
+```{r}
+ggplot(mapping = aes(subscrib_num_open$num_open)) +
+  stat_lorenz() + 
+  labs(title = "Lorenz Curve for Number of Opens") + 
+  xlab("Cumulative proportion of subscribers") + 
+  ylab("Ordinary Lorenz Curve") + 
+  geom_abline(linetype = "dashed") + 
+  annotate_ineq(subscrib_num_open$num_open, size = 5)
+```
+
 
 
 
 # Trends in the Open Probability
 
-We modeled the probability that a given subscriber will open a weekly newsletter within a week of its sent date. If the subscriber opens the newsletter after a week or uses the newsletter to unsubscribe, we consider it a non-open. 
+## Overview of the Data Used
+
+There are 16,291 unique subscribers in the data set, with 622,614 observations. 
+
+We focused on the probability that a given subscriber will open a weekly newsletter within a week of its sent date. If the subscriber opens the newsletter after a week or uses the newsletter to unsubscribe, we consider it a non-open. We examined several factors affecting the open probability:
+
+* Trend over the date newsletter was sent out (2019-01-01 to 2020-12-31).
+* Whether newsletter was sent before or after start of the COVID pandemic on 2020-03-12.
+* Time of day newsletter was sent out (6:30 am to 8:40 pm).
+* Length of subject by number of characters.
+
+<!-- The top of the bars in the barplots and the dashed or shaded lines in the line graphs show the precision of the estimates (+/- 2 standard errors). For barplots, the black symbols on top of the bars -->
+
+Below are 10 sample observations from the dataset. The last variable, week_open, is the response variable of interest. 1 indicates that the subscriber opened the newsletter within the week; 0 indicates that the subscriber received the newsletter but didn't open it.
+
+```{r}
+set.seed(106)
+
+sample_idx <- sample(1:nrow(subscriber_open), size = 10)
+
+kable(subset(subscriber_open, select = c("date_sent", "subscriberid", "covid",
+                                         "mins_since_midnight", "subject_length", 
+                                         "week_open"))[sample_idx,], 
+      row.names = FALSE)
+```
+
+## Overview of Analysis
+
+For every factor of interest, we plotted a barplot to display any trends. 
+
+We also fitted a generalized additive mixed model to the data to confirm the trends shown in the barplots. Results from the model are more reliable than just using the barplots, because the model accounts for confounding and dependence between opens for the same subscriber.  
+
+The model uses a random sub-sample of 1,629 subscribers (63,897 observations) so it can finish in a reasonable amount of time.
+
+All plots show the confidence intervals of the estimates; two standard errors above and below the estimates are indicated on top of the bars in the barplots and by the dashed lines or shading in the line graphs. The true value can be expected to lie within two standard errors from the estimate. 
 
 ```{r}
 load("m4.RData")
 ```
 
-```{r}
+```{r, include = FALSE}
 summary(m4)
 ```
 
@@ -45,13 +103,254 @@ logit <- function(x){
 }
 ```
 
+## Trend over Date
+
 ```{r}
-plot(m4, trans = expit, select = 4, main = "Effect of Time of Day on Open Probability", ylab = "Probability")
+month_yr <- format(subscriber_open$date_sent, "%Y-%m")
+
+month_tab <- table(subscriber_open$week_open, month_yr)
 ```
 
 ```{r}
-plot_smooth(m4, view = "mins_since_midnight", transform = expit)
+month_dat <- data.frame(month_grp = colnames(month_tab), month_prop = prop.table(month_tab, margin = 2)[2, ], covid = c(rep("Before", 13), rep("After", 10)))
+
+# month_dat$month_grp <- factor(month_dat$month_grp, levels = month_dat$month_grp)
+
+month_dat$se <- sqrt(month_dat$month_prop * (1 - month_dat$month_prop) / colSums(month_tab))
 ```
+
+The below barplot shows the proportion of subscribers that opened the newsletter, given the month the newsletter was sent to them. 
+
+```{r}
+ggplot(month_dat, aes(x = month_grp, y = month_prop, fill = covid)) + 
+  geom_bar(stat = "identity") + 
+  geom_errorbar(aes(ymin = month_prop - 2 * se, ymax = month_prop + 2 * se), width = 0.2) +
+  ggtitle("Proportion of Opens by Month") + 
+  xlab("Month") + 
+  ylab("Open Proportion") + 
+  scale_x_discrete(labels = c(1:12, 1, 3:12))
+  
+```
+
+The following plot shows the relative effect of the date the newsletter is sent out on the open probability (a negative relative effect corresponds to a decrease in probability, and a positive relative effect corresponds to an increase in probability) before the pandemic. There appears to be a seasonal trend.
+
+```{r}
+plot(m4, select = 1, xlim = c(0, 436), main = "Open Probability over Time Before COVID", xlab = "Date", ylab = "Relative Effect", ylim = c(-5, 5.2), xaxt = "n")
+
+axis(side = 1, at = c(0, 59, 120, 
+                      181, 243, 304, 
+                      365, 425), 
+     labels = c("1/19", "3/19", "5/19",
+                "7/19", "9/19", "11/19", 
+                "1/20", "3/20"))
+```
+
+The above plot shows the partial effect of the date alone, without considering other covariates. The following plot shows the actual estimated probabilities over time under the following specific scenario:
+
+* The newsletter was sent out at 10:30 am.
+* The newsletter has the median subject length of 66 characters.
+
+```{r}
+plot_smooth(m4, view = "days_since_start", cond = list(covid = "Before", 
+                                                       mins_since_midnight = 630,
+                                                       subject_length = 66),
+            transform = expit, hide.label = TRUE, xlim = c(0, 436), print.summary = FALSE, 
+            xaxt = "n", main = "Open Probability over Time Before COVID", 
+            ylab = "Probability", xlab = "Date")
+
+axis(side = 1, at = c(0, 59, 120, 
+                      181, 243, 304, 
+                      365, 425), 
+     labels = c("1/19", "3/19", "5/19",
+                "7/19", "9/19", "11/19", 
+                "1/20", "3/20"))
+```
+
+After the pandemic, there is a downward trend in open probability.
+
+```{r}
+plot(m4, select = 2, xlim = c(436, 728), main = "Open Probability over Time During COVID", xlab = "Date", ylab = "Relative Effect", ylim = c(-5, 5.2), xaxt = "n")
+
+axis(side = 1, at = c(456, 486, 547, 
+                      609, 670, 731), 
+     labels = c("4/20", "5/20", "7/20", 
+                "9/20", "11/20", "1/21"))
+```
+
+The above plot shows the partial effect of the date alone, without considering other covariates. The following plot shows the actual estimated probabilities over time under the following specific scenario:
+
+* The newsletter was sent out at 10:30 am.
+* The newsletter has the median subject length of 66 characters.
+
+```{r}
+plot_smooth(m4, view = "days_since_start", cond = list(covid = "After", 
+                                                       mins_since_midnight = 630, 
+                                                       subject_length = 66),
+            transform = expit, hide.label = TRUE, xlim = c(436, 728), xaxt = "n", 
+            main = "Open Probability over Time During COVID", xlab = "Date", ylab = "Probability",
+            print.summary = FALSE)
+
+axis(side = 1, at = c(456, 486, 547, 
+                      609, 670, 731), 
+     labels = c("4/20", "5/20", "7/20", 
+                "9/20", "11/20", "1/21"))
+
+```
+
+Below shows the relative effect of covid, i.e. whether the newsletter was sent before or after the pandemic started. It appears that the open probability rises during the pandemic, but the effect is not significantly different than before the pandemic (see the dashed standard error bars). However, covid significantly affects how the open probability varies by date or hour of day the newsletter was sent. 
+
+![](covid_partial_effect.pdf)\
+
+
+
+## Time of Day Trend
+
+```{r}
+# plot of barplots over time of day
+
+hour_breaks <- seq(390, 1260, by = 120)
+
+hour_breaks[length(hour_breaks)] <- max(subscriber_open$mins_since_midnight)
+
+hour_grp <- cut(subscriber_open$mins_since_midnight, breaks = hour_breaks)
+
+hour_tab <- table(subscriber_open$week_open, hour_grp)
+```
+
+<!-- ```{r} -->
+<!-- barplot(prop.table(hour_tab, margin = 2)) -->
+<!-- ``` -->
+
+```{r}
+# hour_dat <- data.frame(Opened = subscriber_open$week_open, Hour = hour_grp)
+
+hour_dat <- data.frame(hour_grp = colnames(hour_tab), hour_prop = prop.table(hour_tab, margin = 2)[2, ])
+
+hour_dat$hour_grp <- factor(hour_dat$hour_grp, levels = hour_dat$hour_grp)
+
+hour_dat$se <- sqrt(hour_dat$hour_prop * (1 - hour_dat$hour_prop) / colSums(hour_tab))
+```
+
+The below barplot shows the proportion of subscribers that opened the newsletter, given that the newsletter was sent to them within a specific time interval. The barplot suggests that there are two time intervals with higher open proportions.
+
+```{r}
+# ggplot(data = hour_dat, aes(x = Hour, fill = Opened)) + 
+  # geom_bar(position = "fill")
+
+ggplot(hour_dat, aes(x = hour_grp, y = hour_prop)) + 
+  geom_bar(stat = "identity") + 
+  geom_errorbar(aes(ymin = hour_prop - 2 * se, ymax = hour_prop + 2 * se), width = 0.2) +
+  ggtitle("Proportion of Opens by Time Interval") + 
+  xlab("Time Interval") + 
+  ylab("Open Proportion") + 
+  scale_x_discrete(labels = rep(c("6:30-8:30",
+                                  "8:30-10:30",
+                                  "10:30-12:30",
+                                  "12:30-14:30",
+                                  "14:30-16:30",
+                                  "16:30-18:30",
+                                  "18:30-20:40")))
+  
+```
+
+The following plot shows the relative effect of the time of day the newsletter is sent out on the open probability (a negative relative effect corresponds to a decrease in probability, and a positive relative effect corresponds to an increase in probability) during the pandemic. It appears that the optimal times are about 10:30 in the morning and 17:10 in the evening. 
+
+```{r}
+plot(m4, select = 4, main = "Effect of Hour of Day on Open Probability, During COVID", xlab = "Hour of Day", ylab = "Relative Effect", xaxt = "n", ylim = c(-1, 1))
+
+axis(side = 1, at = seq(420, 1200, by = 60), labels = c(seq(7, 20, by = 1)))
+
+abline(v = 630, col = "blue")
+
+abline(v = 1030, col = "blue")
+```
+
+The above plot shows the partial effect of the time of day alone, without considering other covariates. The following plot shows the actual estimated probabilities by time of day under the following specific scenario:
+
+* The newsletter was sent out on December 1, 2020.
+* The newsletter has the median subject length of 66 characters.
+
+```{r}
+plot_smooth(m4, view = "mins_since_midnight", cond = list(days_since_start = 700, 
+                                                          subject_length = 66),
+            transform = expit, hide.label = TRUE, 
+            main = "Open Probability vs. Hour of Day, given other covariates", xlab = "Hour of Day", ylab = "Probability", xaxt = "n", 
+            print.summary = FALSE)
+
+axis(side = 1, at = seq(420, 1200, by = 60), labels = c(seq(7, 20, by = 1)))
+
+abline(v = 630, col = "blue")
+
+abline(v = 1030, col = "blue")
+```
+
+Note: I do not show graphs for the effect of hour of day before the pandemic, because the estimates are not very precise. 
+
+
+
+## Subject Length Trend
+
+```{r}
+length_breaks <- seq(35, 102, by = 15)
+
+length_breaks[length(length_breaks)] <- max(subscriber_open$subject_length)
+
+length_grp <- cut(subscriber_open$subject_length, breaks = length_breaks)
+
+length_tab <- table(subscriber_open$week_open, length_grp)
+```
+
+<!-- ```{r} -->
+<!-- barplot(prop.table(length_tab, margin = 2)) -->
+<!-- ``` -->
+
+```{r}
+length_dat <- data.frame(length_grp = colnames(length_tab), length_prop = prop.table(length_tab, margin = 2)[2, ])
+
+length_dat$length_grp <- factor(length_dat$length_grp, levels = length_dat$length_grp)
+
+length_dat$se <- sqrt(length_dat$length_prop * (1 - length_dat$length_prop) / colSums(length_tab))
+```
+
+The below barplot shows the proportion of subscribers that opened the newsletter, given that the subject length was within a specific interval. 
+
+```{r}
+ggplot(length_dat, aes(x = length_grp, y = length_prop)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = length_prop - 2 * se, ymax = length_prop + 2 * se), width = 0.2) +
+  ggtitle("Proportion of Opens by Subject Length") +
+  xlab("Subject Length") +
+  ylab("Open Proportion")
+
+```
+
+The following plot shows the relative effect of the subject length on the open probability. There appears to be a downward trend in open probability as the subject length increases. 
+
+```{r}
+plot(m4, select = 5, main = "Effect of Subject Length on Open Probability", xlab = "Subject Length in Characters", ylab = "Relative Effect", ylim = c(-1, 1))
+
+```
+
+The above plot shows the partial effect of the subject length alone, without considering other covariates. The following plot shows the actual estimated probabilities by subject length under the following specific scenario:
+
+* The newsletter was sent out on December 1, 2020.
+* The newsletter was sent out at 10:30 am.
+
+```{r}
+plot_smooth(m4, view = "subject_length", cond = list(days_since_start = 700, 
+                                                          mins_since_midnight = 630),
+            transform = expit, hide.label = TRUE, 
+            main = "Open Probability vs. Subject Length, given other covariates", xlab = "Subject Length", ylab = "Probability", 
+            print.summary = FALSE)
+```
+
+
+
+Takeaways:
+
+* 10:30 am and 5:10 pm seem to be optimal times for sending the newsletter. 
+* Shorter subject headings (in terms of number of characters) are better.
+
 
 
 

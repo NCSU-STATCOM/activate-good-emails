@@ -187,6 +187,310 @@ load("~/Documents/NCSU_Spring_2021/activate_good_project/open_click_models/m4.RD
 
 
 
+# Trying out several seeds, to examine stability of results
+# all run on the Desktop session
+
+subid <- unique(subscriber_open$subscriberid)
+
+set.seed(1)
+
+subid_sample <- subid[sample(1:length(subid), size = length(subid) / 10)]
+
+dat_sample <- subscriber_open[subscriber_open$subscriberid %in% subid_sample,]
 
 
+
+ptm <- proc.time()
+
+m41 <- bam(week_open ~ covid + 
+            s(days_since_start, by = covid) + 
+            s(mins_since_midnight, by = covid) + 
+            s(subject_length) + 
+            s(subscriberid, bs = "re"), 
+          family = "binomial",
+          data = dat_sample, 
+          discrete = TRUE)
+
+save(m41, file = "open_click_models/m4_models/m41.RData")
+
+proc.time() - ptm
+
+
+
+
+
+subid <- unique(subscriber_open$subscriberid)
+
+set.seed(2)
+
+subid_sample <- subid[sample(1:length(subid), size = length(subid) / 10)]
+
+dat_sample <- subscriber_open[subscriber_open$subscriberid %in% subid_sample,]
+
+
+
+ptm <- proc.time()
+
+m42 <- bam(week_open ~ covid + 
+             s(days_since_start, by = covid) + 
+             s(mins_since_midnight, by = covid) + 
+             s(subject_length) + 
+             s(subscriberid, bs = "re"), 
+           family = "binomial",
+           data = dat_sample, 
+           discrete = TRUE)
+
+save(m42, file = "open_click_models/m4_models/m42.RData")
+
+proc.time() - ptm
+
+
+
+
+
+subid <- unique(subscriber_open$subscriberid)
+
+set.seed(3)
+
+subid_sample <- subid[sample(1:length(subid), size = length(subid) / 10)]
+
+dat_sample <- subscriber_open[subscriber_open$subscriberid %in% subid_sample,]
+
+
+
+ptm <- proc.time()
+
+m43 <- bam(week_open ~ covid + 
+             s(days_since_start, by = covid) + 
+             s(mins_since_midnight, by = covid) + 
+             s(subject_length) + 
+             s(subscriberid, bs = "re"), 
+           family = "binomial",
+           data = dat_sample, 
+           discrete = TRUE)
+
+save(m43, file = "open_click_models/m4_models/m43.RData")
+
+proc.time() - ptm
+
+
+
+
+
+subid <- unique(subscriber_open$subscriberid)
+
+set.seed(4)
+
+subid_sample <- subid[sample(1:length(subid), size = length(subid) / 10)]
+
+dat_sample <- subscriber_open[subscriber_open$subscriberid %in% subid_sample,]
+
+
+
+ptm <- proc.time()
+
+m44 <- bam(week_open ~ covid + 
+             s(days_since_start, by = covid) + 
+             s(mins_since_midnight, by = covid) + 
+             s(subject_length) + 
+             s(subscriberid, bs = "re"), 
+           family = "binomial",
+           data = dat_sample, 
+           discrete = TRUE)
+
+save(m44, file = "open_click_models/m4_models/m44.RData")
+
+proc.time() - ptm
+
+
+
+
+
+subid <- unique(subscriber_open$subscriberid)
+
+set.seed(5)
+
+subid_sample <- subid[sample(1:length(subid), size = length(subid) / 10)]
+
+dat_sample <- subscriber_open[subscriber_open$subscriberid %in% subid_sample,]
+
+
+
+ptm <- proc.time()
+
+m45 <- bam(week_open ~ covid + 
+             s(days_since_start, by = covid) + 
+             s(mins_since_midnight, by = covid) + 
+             s(subject_length) + 
+             s(subscriberid, bs = "re"), 
+           family = "binomial",
+           data = dat_sample, 
+           discrete = TRUE)
+
+save(m45, file = "open_click_models/m4_models/m45.RData")
+
+proc.time() - ptm
+
+
+
+
+subid <- unique(subscriber_open$subscriberid)
+
+set.seed(6)
+
+subid_sample <- subid[sample(1:length(subid), size = length(subid) / 10)]
+
+dat_sample <- subscriber_open[subscriber_open$subscriberid %in% subid_sample,]
+
+
+
+ptm <- proc.time()
+
+m46 <- bam(week_open ~ covid + 
+             s(days_since_start, by = covid) + 
+             s(mins_since_midnight, by = covid) + 
+             s(subject_length) + 
+             s(subscriberid, bs = "re"), 
+           family = "binomial",
+           data = dat_sample, 
+           discrete = TRUE)
+
+save(m46, file = "open_click_models/m4_models/m46.RData")
+
+proc.time() - ptm
+
+
+
+
+subid <- unique(subscriber_open$subscriberid)
+
+set.seed(7)
+
+subid_sample <- subid[sample(1:length(subid), size = length(subid) / 10)]
+
+dat_sample <- subscriber_open[subscriber_open$subscriberid %in% subid_sample,]
+
+
+
+ptm <- proc.time()
+
+m47 <- bam(week_open ~ covid + 
+             s(days_since_start, by = covid) + 
+             s(mins_since_midnight, by = covid) + 
+             s(subject_length) + 
+             s(subscriberid, bs = "re"), 
+           family = "binomial",
+           data = dat_sample, 
+           discrete = TRUE)
+
+save(m47, file = "open_click_models/m4_models/m47.RData")
+
+proc.time() - ptm
+
+
+
+
+subid <- unique(subscriber_open$subscriberid)
+
+set.seed(8)
+
+subid_sample <- subid[sample(1:length(subid), size = length(subid) / 10)]
+
+dat_sample <- subscriber_open[subscriber_open$subscriberid %in% subid_sample,]
+
+
+
+ptm <- proc.time()
+
+m48 <- bam(week_open ~ covid + 
+             s(days_since_start, by = covid) + 
+             s(mins_since_midnight, by = covid) + 
+             s(subject_length) + 
+             s(subscriberid, bs = "re"), 
+           family = "binomial",
+           data = dat_sample, 
+           discrete = TRUE)
+
+save(m48, file = "open_click_models/m4_models/m48.RData")
+
+proc.time() - ptm
+
+
+
+
+subid <- unique(subscriber_open$subscriberid)
+
+set.seed(9)
+
+subid_sample <- subid[sample(1:length(subid), size = length(subid) / 10)]
+
+dat_sample <- subscriber_open[subscriber_open$subscriberid %in% subid_sample,]
+
+
+
+ptm <- proc.time()
+
+m49 <- bam(week_open ~ covid + 
+             s(days_since_start, by = covid) + 
+             s(mins_since_midnight, by = covid) + 
+             s(subject_length) + 
+             s(subscriberid, bs = "re"), 
+           family = "binomial",
+           data = dat_sample, 
+           discrete = TRUE)
+
+save(m49, file = "open_click_models/m4_models/m49.RData")
+
+proc.time() - ptm
+
+
+
+
+subid <- unique(subscriber_open$subscriberid)
+
+set.seed(10)
+
+subid_sample <- subid[sample(1:length(subid), size = length(subid) / 10)]
+
+dat_sample <- subscriber_open[subscriber_open$subscriberid %in% subid_sample,]
+
+
+
+ptm <- proc.time()
+
+m410 <- bam(week_open ~ covid + 
+             s(days_since_start, by = covid) + 
+             s(mins_since_midnight, by = covid) + 
+             s(subject_length) + 
+             s(subscriberid, bs = "re"), 
+           family = "binomial",
+           data = dat_sample, 
+           discrete = TRUE)
+
+save(m410, file = "open_click_models/m4_models/m410.RData")
+
+proc.time() - ptm
+
+
+
+
+summary(m41)
+
+summary(m42)
+
+summary(m43)
+
+summary(m44)
+
+summary(m45)
+
+summary(m46)
+
+summary(m47)
+
+summary(m48)
+
+summary(m49)
+
+summary(m410)
 

@@ -1,0 +1,57 @@
+---
+title: "Trends in the Open Probability"
+author: "Alvin Sheng"
+date: "2/11/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+
+# Lorenz Curves
+
+
+
+<!-- # Exploring the Dataset -->
+
+
+
+# Trends in the Open Probability
+
+We modeled the probability that a given subscriber will open a weekly newsletter within a week of its sent date. If the subscriber opens the newsletter after a week or uses the newsletter to unsubscribe, we consider it a non-open. 
+
+```{r}
+load("m4.RData")
+```
+
+```{r}
+summary(m4)
+```
+
+```{r}
+expit <- function(x){
+  
+  1/(1+exp(-x))
+  
+}
+
+logit <- function(x){
+  
+  log(x / (1 - x))
+  
+}
+```
+
+```{r}
+plot(m4, trans = expit, select = 4, main = "Effect of Time of Day on Open Probability", ylab = "Probability")
+```
+
+```{r}
+plot_smooth(m4, view = "mins_since_midnight", transform = expit)
+```
+
+
+

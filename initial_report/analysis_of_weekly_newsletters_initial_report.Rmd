@@ -97,6 +97,20 @@ ggplot(data = weeklies1, aes(x = datetime, y = unsubscribes, col = covid)) +
 
 
 
+# Summary Statistics by Season
+
+```{r}
+ggplot(data = weeklies1[weeklies1$covid == "Before",], aes(season, opened)) + 
+  geom_boxplot()
+```
+
+```{r}
+ggplot(data = weeklies1[weeklies1$covid == "After",], aes(season, opened)) + 
+  geom_boxplot()
+```
+
+
+
 # Summary Statistics throughout a Day
 
 ```{r}

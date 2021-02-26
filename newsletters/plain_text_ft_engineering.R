@@ -25,16 +25,6 @@ read_in_plain_text <- function(pt_dir) {
 
 
 
-# # to-do: number of links, to standardize the click count? 
-# 
-# pt_ft_engi <- function() {
-#   
-#   
-#   
-# }
-
-
-
 # Including plain-text features
 
 pt_dir <- file.path("newsletters", "plain_text")
@@ -72,6 +62,7 @@ pt_df$num_words <- sapply(word_tokens_list, length)
 
 
 
-# pt_fts <- pt_ft_engi(pt_df)
+save(pt_df, file = "newsletters/pt_df.RData")
+
 
 

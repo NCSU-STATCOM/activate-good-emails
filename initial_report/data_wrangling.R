@@ -72,15 +72,7 @@ save(weeklies1, file = "initial_report/weeklies1.RData")
 
 
 
-# # Including plain-text features
-# 
-# pt_dir <- file.path("newsletters", "plain_text")
-# 
-# # read in all the plain-text of the newsletters into a data.frame, 
-# # in order of their sent out date
-# pt_df <- read_in_plain_text(pt_dir)
-# 
-# # pt_fts <- pt_ft_engi(pt_df)
+
 
 
 

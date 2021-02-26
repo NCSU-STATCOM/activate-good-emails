@@ -1,5 +1,7 @@
 
 library(readtext)
+library(tidyverse)
+library(tokenizers)
 
 # functions for plain-text feature engineering
 
@@ -23,14 +25,53 @@ read_in_plain_text <- function(pt_dir) {
 
 
 
-# to-do: number of links, to standardize the click count? 
+# # to-do: number of links, to standardize the click count? 
+# 
+# pt_ft_engi <- function() {
+#   
+#   
+#   
+# }
 
-pt_ft_engi <- function() {
-  
-  
-  
-}
 
 
+# Including plain-text features
+
+pt_dir <- file.path("newsletters", "plain_text")
+
+# read in all the plain-text of the newsletters into a data.frame,
+# in order of their sent out date
+pt_df <- read_in_plain_text(pt_dir)
+
+
+
+# String Cleaning
+
+# All weekly newsletters have bracketed numbers throughout and a list of references at the bottom.
+# Consider removing those before tokenization. 
+
+# Thus, you can remove all bracketed numbers and things from "[22]Facebook [23]Twitter [24]Instagram" down.
+
+# remove the bottom part (social media and references) first
+
+text_rm_bottom <- sapply(pt_df$text, function(x) {
+  
+  gsub("\\[\\d+\\]Facebook \\[\\d+\\]Twitter \\[\\d+\\]Instagram.*", "", x)
+  
+}, USE.NAMES = FALSE)
+
+text_rm_bracket_nums <- sapply(text_rm_bottom, function(x) {
+  
+  gsub("\\[\\d+\\]", "", x)
+  
+}, USE.NAMES = FALSE)
+
+word_tokens_list <- tokenize_words(text_rm_bracket_nums)
+
+pt_df$num_words <- sapply(word_tokens_list, length)
+
+
+
+# pt_fts <- pt_ft_engi(pt_df)
 
 

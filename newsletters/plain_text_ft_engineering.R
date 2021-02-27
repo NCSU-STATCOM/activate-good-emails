@@ -2,6 +2,7 @@
 library(readtext)
 library(tidyverse)
 library(tokenizers)
+library(stringi)
 
 # functions for plain-text feature engineering
 
@@ -59,6 +60,19 @@ text_rm_bracket_nums <- sapply(text_rm_bottom, function(x) {
 word_tokens_list <- tokenize_words(text_rm_bracket_nums)
 
 pt_df$num_words <- sapply(word_tokens_list, length)
+
+
+
+# count the number of links
+
+pt_df$num_links <- sapply(pt_df$text, function(x) {
+  
+  # index right before list of links 
+  ref_index <- stri_locate_last(x, regex = "References")[2] + 1
+  
+  str_count(substr(x, start = ref_index, stop = str_length(x)), pattern = "\\\n\\d*\\. ")
+  
+}, USE.NAMES = FALSE)
 
 
 

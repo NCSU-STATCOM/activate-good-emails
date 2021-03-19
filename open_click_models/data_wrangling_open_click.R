@@ -29,6 +29,8 @@ sub_agg_merged <- merge(subscriber_agg, subset(weeklies1,
 
 # construct 2 dataframes, one for the open model, the other for the click model
 
+# first, for the open model: 
+
 subscriber_open <- subset(sub_agg_merged, select = c("date_sent", "subscriberid", "covid", "season", 
                                                      "mins_since_midnight", "subject_length", 
                                                      "week_open"))
@@ -60,7 +62,40 @@ subscriber_open$days_since_start <- as.numeric(subscriber_open$date_sent - study
 
 save(subscriber_open, file = "open_click_models/subscriber_open.RData")
 
+
+
   
+
+# now, for the click model: 
+
+load("open_click_models/subscriber_open.RData")
+
+# load pt_and_html_df to merge in the number of characters in subject
+load("newsletters/pt_and_html_df.RData")
+
+# in order to merge pt_and_html_df into subscriber_open, I need a shared variable
+# i.e. the date without the timestamp
+
+pt_and_html_df$date <- as.character(as.POSIXct(substr(pt_and_html_df$doc_id, start = 11, stop = 20), format = "%m-%d-%Y"))
+
+subscriber_open$date <- format(subscriber_open$date_sent, format = "%Y-%m-%d")  
+
+# one date is off by one day, so below is hacky fix
+pt_and_html_df$date[pt_and_html_df$date == "2020-12-22"] <- "2020-12-21"
+
+
+
+
+
+
+sub_agg_merged <- merge(subscriber_open, subset(pt_and_html_df,
+                                               select = c("subject", "covid", "season", "mins_since_midnight",
+                                                          "subject_length", "date")),
+                        by = "date")
+
+
+
+
 
 
   

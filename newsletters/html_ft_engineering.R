@@ -1,5 +1,6 @@
 library(xml2)
 library(rvest)
+library(stringr)
 
 # script for html feature engineering
 
@@ -41,9 +42,12 @@ for (i in 1:length(newsletter_id)) {
 
 
 
+pt_and_html_df <- data.frame(pt_df, num_clickable_pics = num_clickable_pics, 
+                             num_unclickable_pics = num_unclickable_pics1 + num_unclickable_pics2)
 
 
 
+save(pt_and_html_df, file = "newsletters/pt_and_html_df.RData")
 
 
 

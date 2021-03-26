@@ -13,10 +13,24 @@ link_characteristics <- function(newsletter) {
   
   link_info <- data.frame(link_num = 1:length(address))
   
-  link_info$address <- address
-  
   # list of words making up the link
   link_info$words_in_link <- newsletter %>% html_nodes("a") %>% html_text()
+  
+  # indicator of whether link is bolded (has strong tag)
+  strong_nodeset <- newsletter %>% html_nodes("a") %>% html_node("strong")
+  link_info$bolded <- sapply(strong_nodeset, function(node) !is.na(node))
+  
+  # font characteristics (use regex to get font size and color)
+  font_characteristics <- newsletter %>% html_nodes("a") %>% html_attr("style")
+  
+  # font size 
+  link_info$font_size <- NA
+  
+  # font color
+  link_info$font_color <- NA
+  
+  # finally, the href addresses themselves
+  link_info$address <- address
   
   return(link_info)
   

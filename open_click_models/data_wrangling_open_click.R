@@ -33,7 +33,7 @@ sub_agg_merged <- merge(subscriber_agg, subset(weeklies1,
 
 subscriber_open <- subset(sub_agg_merged, select = c("date_sent", "subscriberid", "covid", "season", 
                                                      "mins_since_midnight", "subject_length", 
-                                                     "week_open"))
+                                                     "week_open", "clicks"))
 
 subscriber_open$week_open[sub_agg_merged$unsubscribes == 1] <- 0
 
@@ -70,32 +70,31 @@ save(subscriber_open, file = "open_click_models/subscriber_open.RData")
 
 load("open_click_models/subscriber_open.RData")
 
-# load pt_and_html_df to merge in the number of characters in subject
+# load pt_and_html_df to merge in plain-text and html info
 load("newsletters/pt_and_html_df.RData")
 
 # in order to merge pt_and_html_df into subscriber_open, I need a shared variable
 # i.e. the date without the timestamp
 
-pt_and_html_df$date <- as.character(as.POSIXct(substr(pt_and_html_df$doc_id, start = 11, stop = 20), format = "%m-%d-%Y"))
+pt_and_html_df$date <- as.character(as.POSIXct(substr(pt_and_html_df$doc_id, start = 11, stop = 20),
+                                               format = "%m-%d-%Y"))
 
 subscriber_open$date <- format(subscriber_open$date_sent, format = "%Y-%m-%d")  
 
-# one date is off by one day, so below is hacky fix
-pt_and_html_df$date[pt_and_html_df$date == "2020-12-22"] <- "2020-12-21"
 
 
-
-
-
-
-sub_agg_merged <- merge(subscriber_open, subset(pt_and_html_df,
-                                               select = c("subject", "covid", "season", "mins_since_midnight",
-                                                          "subject_length", "date")),
+sub_agg_merged2 <- merge(subscriber_open, subset(pt_and_html_df,
+                                               select = c("num_words", "num_links", "num_clickable_pics",
+                                                          "num_unclickable_pics", "date")),
                         by = "date")
 
+subscriber_clicks <- subset(sub_agg_merged2, select = c("subscriberid", "covid", 
+                                                     "mins_since_midnight", "subject_length", 
+                                                     "clicks", "days_since_start", "num_words", 
+                                                     "num_links", "num_clickable_pics", 
+                                                     "num_unclickable_pics"))
 
-
-
+save(subscriber_clicks, file = "open_click_models/subscriber_clicks.RData")
 
 
   

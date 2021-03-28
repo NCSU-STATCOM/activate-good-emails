@@ -16,6 +16,10 @@ link_characteristics <- function(newsletter) {
   # list of words making up the link
   link_info$words_in_link <- newsletter %>% html_nodes("a") %>% html_text()
   
+  # image flag
+  image_nodeset <- newsletter %>% html_nodes("a") %>% html_node("img")
+  link_info$is_image <- sapply(image_nodeset, function(node) !is.na(node))
+  
   # indicator of whether link is bolded (has strong tag)
   strong_nodeset <- newsletter %>% html_nodes("a") %>% html_node("strong")
   link_info$bolded <- sapply(strong_nodeset, function(node) !is.na(node))
@@ -24,10 +28,22 @@ link_characteristics <- function(newsletter) {
   font_characteristics <- newsletter %>% html_nodes("a") %>% html_attr("style")
   
   # font size 
-  link_info$font_size <- NA
+  font_size <- str_extract(font_characteristics, pattern = 'font-size:\\d+')
+  font_size <- as.numeric(gsub("font-size:", "", font_size))
+  # there may be a missing font size even when the link has words in it. In this case, 
+  # the font size is set to the default at 15, at least for the first newsletter. 
+  # Hopefully the default doesn't change. 
+  # I also need to ignore the social media buttons, which have font characteristics
+  # for some reason.
+  font_size[font_characteristics != "" & 
+              font_characteristics != "text-decoration:none;cursor:pointer;box-sizing:content-box;" &
+              is.na(font_size)] <- 15
+  link_info$font_size <- font_size
   
   # font color
-  link_info$font_color <- NA
+  font_color <- str_extract(font_characteristics, pattern = '(?<!background-)color:rgb\\(\\d+, *\\d+, *\\d+\\)')
+  font_color <- gsub("color:rgb", "", font_color)
+  link_info$font_color <- font_color
   
   # finally, the href addresses themselves
   link_info$address <- address

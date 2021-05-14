@@ -15,6 +15,7 @@ Purpose: Things for click rate model
 import os
 import re
 import string
+import numpy as np
 import pandas as pd
 import datetime as dt
 
@@ -77,7 +78,7 @@ def word_counts(df, token_list):
         
     return(word_counts)
 
-def word_cloud_gen(links_to_keep, click_df, strings_df):
+def word_cloud_gen(links_to_keep, name, click_df, strings_df):
     
     # Get the links interested in
     unique_links = pd.read_excel(ag + 'UniqueLinks.xlsx', links_to_keep)
@@ -134,7 +135,7 @@ def word_cloud_gen(links_to_keep, click_df, strings_df):
     wc.generate_from_frequencies(temp_dict)
     plt.imshow(wc, interpolation="bilinear")
     plt.axis("off")
-    plt.savefig(ag_output + links_to_keep + '.png',
+    plt.savefig(ag_output + name + '.png',
                         bbox_inches = 'tight', dpi = 600)
     plt.close()
     
@@ -156,16 +157,17 @@ for i in range(len(files)):
     
     # Get all of the strings with an associated link
     # This will include the entire line as seen in the email; i.e. to a '\n'
-    link_strings = [string for string in f_list if re.search('[0-9]].', string) is not None]
+    link_strings = [string for string in f_list if (re.search('[0-9]].', string) is not None)
+                    and ('Facebook' not in string)]
     
+    # Get the proportion of the document each line is
+    link_prop = [f_list.index(string)/len(f_list) for string in link_strings]
+        
     # Remove filler words (words not capitalized)
     link_strings_clean = [re.sub(r'\b[a-z]+\b', '', string) for string in link_strings]
     
     # Remove extra spaces
     link_strings_clean = [re.sub('\s+', ' ', string) for string in link_strings_clean]
-    
-    # Remove the social media accounts
-    link_strings_clean = [string for string in link_strings_clean if 'Facebook' not in string]
     
     # Get the link numbers
     link_num = [re.search('[[0-9][0-9]]', string).group() for string in link_strings_clean]
@@ -184,7 +186,9 @@ for i in range(len(files)):
     link_strings_nonums = [re.sub(' +', ' ', string.strip()) for string in link_strings_nonums]
     
     # Convert into a dataframe to merge in the list of links
-    link_strings_df = pd.DataFrame( {'link_num': link_num, 'string': link_strings_nonums})
+    link_strings_df = pd.DataFrame( {'link_num': link_num, 
+                                     'string': link_strings_nonums,
+                                     'doc_prop': link_prop})
     
     # Get a list of the actual links in the newsletter
     idx = f_list.index('References') + 2
@@ -215,6 +219,17 @@ for i in range(len(files)):
 # drop any blanks
 all_string_html.drop(all_string_html[all_string_html.string == ''].index, inplace=True)
 
+# save this dataset for other analyses
+all_string_html.to_csv(ag_inter + 'all_string_html.csv', index = False)
+
+#####################################################
+# In Excel we categorized the strings
+#####################################################
+
+all_string_html_cat = pd.read_csv(ag_inter + 'all_string_html_cat.csv')
+all_string_html_cat = all_string_html_cat.drop(columns = 'string')
+all_string_html_cat = all_string_html_cat.rename(columns = {'cat': 'string'})
+
 #####################################################
 # Count the number of times a link was clicked
 #####################################################
@@ -244,29 +259,6 @@ click_counts.to_csv(ag_inter + 'click_counts.csv')
 # of clicks for a word
 #####################################################
 
-click_counts_unique = word_cloud_gen('UniqueLinksClean', click_counts, all_string_html)
-click_counts_opp = word_cloud_gen('Opportunity_Only', click_counts, all_string_html)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+click_counts_unique = word_cloud_gen('UniqueLinksClean', 'UniqueLinksClean', click_counts, all_string_html)
+click_counts_opp = word_cloud_gen('Opportunity_Only', 'Opportunity_Only', click_counts, all_string_html)
+click_counts_cat = word_cloud_gen('UniqueLinksClean', 'UniqueLinksClean_cat', click_counts, all_string_html_cat)

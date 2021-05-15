@@ -95,6 +95,9 @@ link_info_list <- lapply(html_names, function(file_name) {
 
 link_info_df <- do.call("rbind", link_info_list)
 
+# remove the 18th link for the 11-11-2020 newsletter 
+link_info_df <- link_info_df[-which(link_info_df$date == "11/11/20" & link_info_df$link_num == 18),]
+
 write.csv(link_info_df, file = "links/link_characteristics/link_characteristics.csv", 
           row.names = FALSE)
 

@@ -82,6 +82,15 @@ link_info_list <- lapply(html_names, function(file_name) {
                                       tz = "America/New_York", format = "%m-%d-%Y"), format = "%m/%d/%y")
   link_info <- data.frame(date = formatted_date, link_info)
   
+  # flag for duplicates after the first one
+  dup_after_first <- duplicated(link_info$address)
+  
+  # flag for any duplicates, including first ones
+  dup_addresses <- unique(link_info$address[dup_after_first])
+  dup <- link_info$address %in% dup_addresses
+  
+  link_info <- data.frame(link_info, dup = dup, dup_after_first = dup_after_first)
+  
 })
 
 link_info_df <- do.call("rbind", link_info_list)
@@ -89,18 +98,15 @@ link_info_df <- do.call("rbind", link_info_list)
 write.csv(link_info_df, file = "links/link_characteristics/link_characteristics.csv", 
           row.names = FALSE)
 
+# make another version, with duplicates after the first one deleted
+# and with no duplicates-after-the-first-one flag
 
+link_info_df_no_dup <- link_info_df[link_info_df$dup_after_first == FALSE,]
 
-# then maybe make function to extract from it accordingly
+link_info_df_no_dup <- subset(link_info_df_no_dup, select = -dup_after_first)
 
-
-
-
-#' Function to return dataframe mapping the link to its characteristics
-#'
-#' @param newsletter the html file to find the links in
-#' @export
-
+write.csv(link_info_df_no_dup, file = "links/link_characteristics/link_characteristics_no_dup.csv", 
+          row.names = FALSE)
 
 
 

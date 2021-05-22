@@ -89,7 +89,13 @@ link_info_list <- lapply(html_names, function(file_name) {
   dup_addresses <- unique(link_info$address[dup_after_first])
   dup <- link_info$address %in% dup_addresses
   
-  link_info <- data.frame(link_info, dup = dup, dup_after_first = dup_after_first)
+  # flag for links that have images associated with them
+  # this will include image links and text links that also have images associated with them
+  image_addresses <- unique(link_info$address[link_info$is_image])
+  image_assoc <- link_info$address %in% image_addresses
+  
+  link_info <- data.frame(link_info, dup = dup, dup_after_first = dup_after_first, 
+                          image_assoc = image_assoc)
   
 })
 
@@ -101,10 +107,15 @@ link_info_df <- link_info_df[-which(link_info_df$date == "11/11/20" & link_info_
 write.csv(link_info_df, file = "links/link_characteristics/link_characteristics.csv", 
           row.names = FALSE)
 
-# make another version, with duplicates after the first one deleted
-# and with no duplicates-after-the-first-one flag
+# make another version, removing image links and any duplicates 
+# that isn't the first text link
+# also remove no duplicates-after-the-first-one flag
 
-link_info_df_no_dup <- link_info_df[link_info_df$dup_after_first == FALSE,]
+link_info_df_no_dup <- link_info_df[link_info_df$is_image == FALSE,]
+
+text_dup <- duplicated(cbind(link_info_df_no_dup$date, link_info_df_no_dup$address))
+
+link_info_df_no_dup <- link_info_df_no_dup[text_dup == FALSE,]
 
 link_info_df_no_dup <- subset(link_info_df_no_dup, select = -dup_after_first)
 

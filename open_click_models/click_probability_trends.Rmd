@@ -19,7 +19,13 @@ library(gglorenz)
 ```
 
 ```{r}
-load("subscriber_clicks.RData")
+getwd()
+```
+
+<!-- Make sure the directory below and for loading m1_clicks.RData further down is correct. -->
+
+```{r}
+load("open_click_models/subscriber_clicks.RData")
 ```
 
 # Lorenz Curve
@@ -82,11 +88,15 @@ The model uses a random sub-sample of 1,629 subscribers (63,897 observations) so
 All plots show the confidence intervals of the estimates; two standard errors above and below the estimates are indicated on top of the bars in the barplots and by the dashed lines or shading in the line graphs. The true value can be expected to lie within two standard errors from the estimate. 
 
 ```{r}
-load("m1_clicks.RData")
+load("open_click_models/m1_clicks.RData")
 ```
 
 ```{r, include = FALSE}
 summary(m1)
+```
+
+```{r, include = FALSE}
+gam.check(m1)
 ```
 
 ```{r}

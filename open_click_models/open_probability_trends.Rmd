@@ -18,28 +18,11 @@ library(dplyr)
 library(gglorenz)
 ```
 
-```{r}
-load("subscriber_open.RData")
-```
-
-# Lorenz Curve
+<!-- Make sure the directory below and for loading m4.RData further down is correct. -->
 
 ```{r}
-subscrib_num_open <- subscriber_open %>% group_by(subscriberid) %>% summarise(num_open = sum(week_open == 1))
+load("open_click_models/subscriber_open.RData")
 ```
-
-The Gini Index ranges from 0 to 1, with 1 being perfect inequality. In this case, the distribution of opens among the subscribers seems unequal; according to the curve, the top 25% of people account for 75% of opens. 
-
-```{r}
-ggplot(mapping = aes(subscrib_num_open$num_open)) +
-  stat_lorenz() + 
-  labs(title = "Lorenz Curve for Number of Opens") + 
-  xlab("Cumulative proportion of subscribers") + 
-  ylab("Ordinary Lorenz Curve") + 
-  geom_abline(linetype = "dashed") + 
-  annotate_ineq(subscrib_num_open$num_open, size = 5)
-```
-
 
 
 
@@ -71,6 +54,24 @@ kable(subset(subscriber_open, select = c("date_sent", "subscriberid", "covid",
       row.names = FALSE)
 ```
 
+## Lorenz Curve
+
+```{r}
+subscrib_num_open <- subscriber_open %>% group_by(subscriberid) %>% summarise(num_open = sum(week_open == 1))
+```
+
+The Gini Index ranges from 0 to 1, with 1 being perfect inequality. In this case, the distribution of opens among the subscribers seems unequal; according to the curve, the top 25% of people account for 75% of opens. 
+
+```{r}
+ggplot(mapping = aes(subscrib_num_open$num_open)) +
+  stat_lorenz() + 
+  labs(title = "Lorenz Curve for Number of Opens") + 
+  xlab("Cumulative proportion of subscribers") + 
+  ylab("Ordinary Lorenz Curve") + 
+  geom_abline(linetype = "dashed") + 
+  annotate_ineq(subscrib_num_open$num_open, size = 5)
+```
+
 ## Overview of Analysis
 
 For every factor of interest, we plotted a barplot to display any trends. 
@@ -82,11 +83,15 @@ The model uses a random sub-sample of 1,629 subscribers (63,897 observations) so
 All plots show the confidence intervals of the estimates; two standard errors above and below the estimates are indicated on top of the bars in the barplots and by the dashed lines or shading in the line graphs. The true value can be expected to lie within two standard errors from the estimate. 
 
 ```{r}
-load("m4.RData")
+load("open_click_models/m4.RData")
 ```
 
 ```{r, include = FALSE}
 summary(m4)
+```
+
+```{r, include = FALSE}
+gam.check(m4)
 ```
 
 ```{r}
@@ -203,7 +208,7 @@ Below shows the relative effect of covid, i.e. whether the newsletter was sent b
 
 
 
-## Time of Day Trend
+## Time of Day Trend, Before COVID
 
 ```{r}
 # plot of barplots over time of day
@@ -214,7 +219,8 @@ hour_breaks[length(hour_breaks)] <- max(subscriber_open$mins_since_midnight)
 
 hour_grp <- cut(subscriber_open$mins_since_midnight, breaks = hour_breaks)
 
-hour_tab <- table(subscriber_open$week_open, hour_grp)
+hour_tab <- table(subscriber_open$week_open[subscriber_open$covid == "Before"],
+                  hour_grp[subscriber_open$covid == "Before"])
 ```
 
 <!-- ```{r} -->
@@ -231,16 +237,16 @@ hour_dat$hour_grp <- factor(hour_dat$hour_grp, levels = hour_dat$hour_grp)
 hour_dat$se <- sqrt(hour_dat$hour_prop * (1 - hour_dat$hour_prop) / colSums(hour_tab))
 ```
 
-The below barplot shows the proportion of subscribers that opened the newsletter, given that the newsletter was sent to them within a specific time interval. The barplot suggests that there are two time intervals with higher open proportions.
+The below barplot shows the proportion of subscribers that opened the newsletter sent before the pandemic, given that the newsletter was sent to them within a specific time interval. There were no newsletters sent in three of the time intervals, so the bars are absent. 
 
-```{r}
+```{r, warning = F}
 # ggplot(data = hour_dat, aes(x = Hour, fill = Opened)) + 
   # geom_bar(position = "fill")
 
 ggplot(hour_dat, aes(x = hour_grp, y = hour_prop)) + 
   geom_bar(stat = "identity") + 
   geom_errorbar(aes(ymin = hour_prop - 2 * se, ymax = hour_prop + 2 * se), width = 0.2) +
-  ggtitle("Proportion of Opens by Time Interval") + 
+  ggtitle("Proportion of Opens by Time Interval, Before COVID") + 
   xlab("Time Interval") + 
   ylab("Open Proportion") + 
   scale_x_discrete(labels = rep(c("6:30-8:30",
@@ -253,7 +259,84 @@ ggplot(hour_dat, aes(x = hour_grp, y = hour_prop)) +
   
 ```
 
-The following plot shows the relative effect of the time of day the newsletter is sent out on the open probability (a negative relative effect corresponds to a decrease in probability, and a positive relative effect corresponds to an increase in probability) during the pandemic. It appears that the optimal times are about 10:30 in the morning and 17:10 in the evening. 
+The following plot shows the relative effect of the time of day the newsletter is sent out on the open probability (a negative relative effect corresponds to a decrease in probability, and a positive relative effect corresponds to an increase in probability) before the pandemic. It appears that there is a dip in the open probability at about 10 am.
+
+```{r}
+plot(m4, select = 3, main = "Effect of Hour of Day on Open Probability, Before COVID", xlab = "Hour of Day", ylab = "Relative Effect", xaxt = "n", ylim = c(-1.5, 1.5))
+
+axis(side = 1, at = seq(420, 1200, by = 60), labels = c(seq(7, 20, by = 1)))
+
+abline(v = 600, col = "blue")
+```
+
+The above plot shows the partial effect of the time of day alone, without considering other covariates. The following plot shows the actual estimated probabilities by time of day under the following specific scenario:
+
+* The newsletter was sent out on December 1, 2019.
+* The newsletter has the median subject length of 66 characters.
+
+```{r}
+plot_smooth(m4, view = "mins_since_midnight", cond = list(days_since_start = 334, 
+                                                          subject_length = 66, 
+                                                          covid = "Before"),
+            transform = expit, hide.label = TRUE, 
+            main = "Open Probability vs. Hour of Day, given other covariates", xlab = "Hour of Day", ylab = "Probability", xaxt = "n", 
+            print.summary = FALSE)
+
+axis(side = 1, at = seq(420, 1200, by = 60), labels = c(seq(7, 20, by = 1)))
+
+abline(v = 600, col = "blue")
+```
+
+
+
+## Time of Day Trend, During COVID
+
+```{r}
+# plot of barplots over time of day
+
+hour_breaks <- seq(390, 1260, by = 120)
+
+hour_breaks[length(hour_breaks)] <- max(subscriber_open$mins_since_midnight)
+
+hour_grp <- cut(subscriber_open$mins_since_midnight, breaks = hour_breaks)
+
+hour_tab <- table(subscriber_open$week_open[subscriber_open$covid == "After"],
+                  hour_grp[subscriber_open$covid == "After"])
+```
+
+<!-- ```{r} -->
+<!-- barplot(prop.table(hour_tab, margin = 2)) -->
+<!-- ``` -->
+
+```{r}
+# hour_dat <- data.frame(Opened = subscriber_open$week_open, Hour = hour_grp)
+hour_dat <- data.frame(hour_grp = colnames(hour_tab), hour_prop = prop.table(hour_tab, margin = 2)[2, ])
+hour_dat$hour_grp <- factor(hour_dat$hour_grp, levels = hour_dat$hour_grp)
+hour_dat$se <- sqrt(hour_dat$hour_prop * (1 - hour_dat$hour_prop) / colSums(hour_tab))
+```
+
+The below barplot shows the proportion of subscribers that opened the newsletter during the pandemic, given that the newsletter was sent to them within a specific time interval. The barplot suggests that there are two time intervals with higher open proportions. 
+
+```{r}
+# ggplot(data = hour_dat, aes(x = Hour, fill = Opened)) + 
+  # geom_bar(position = "fill")
+ggplot(hour_dat, aes(x = hour_grp, y = hour_prop)) + 
+  geom_bar(stat = "identity") + 
+  geom_errorbar(aes(ymin = hour_prop - 2 * se, ymax = hour_prop + 2 * se), width = 0.2) +
+  ggtitle("Proportion of Opens by Time Interval, During COVID") + 
+  xlab("Time Interval") + 
+  ylab("Open Proportion") + 
+  scale_x_discrete(labels = rep(c("6:30-8:30",
+                                  "8:30-10:30",
+                                  "10:30-12:30",
+                                  "12:30-14:30",
+                                  "14:30-16:30",
+                                  "16:30-18:30",
+                                  "18:30-20:40")))
+  
+```
+
+The following plot shows the relative effect of the time of day the newsletter is sent out on the open probability during the pandemic. It appears that the optimal times are about 10:30 in the morning and 17:10 in the evening. 
 
 ```{r}
 plot(m4, select = 4, main = "Effect of Hour of Day on Open Probability, During COVID", xlab = "Hour of Day", ylab = "Relative Effect", xaxt = "n", ylim = c(-1, 1))
@@ -283,8 +366,6 @@ abline(v = 630, col = "blue")
 
 abline(v = 1030, col = "blue")
 ```
-
-Note: I do not show graphs for the effect of hour of day before the pandemic, because the estimates are not very precise. 
 
 
 

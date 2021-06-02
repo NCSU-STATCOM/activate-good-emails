@@ -18,11 +18,7 @@ library(dplyr)
 library(gglorenz)
 ```
 
-```{r}
-getwd()
-```
-
-<!-- Make sure the directory below and for loading m1_clicks.RData further down is correct. -->
+<!-- Make sure the directory below and for loading m3_clicks.RData further down is correct. -->
 
 ```{r}
 load("open_click_models/subscriber_clicks.RData")
@@ -30,73 +26,68 @@ load("open_click_models/subscriber_clicks.RData")
 
 # Lorenz Curve
 
-<!-- ```{r} -->
-<!-- subscrib_num_open <- subscriber_open %>% group_by(subscriberid) %>% summarise(num_open = sum(week_open == 1)) -->
-<!-- ``` -->
+```{r}
+subscrib_num_clicks <- subscriber_clicks %>% group_by(subscriberid) %>% summarise(num_clicks = sum(clicks == 1))
+```
 
-<!-- The Gini Index ranges from 0 to 1, with 1 being perfect inequality. In this case, the distribution of opens among the subscribers seems unequal; according to the curve, the top 25% of people account for 75% of opens.  -->
+The Gini Index ranges from 0 to 1, with 1 being perfect inequality. In this case, the distribution of clicks among the subscribers seems unequal; according to the curve, the top 10% of people account for 75% of clicks.
 
-<!-- ```{r} -->
-<!-- ggplot(mapping = aes(subscrib_num_open$num_open)) + -->
-<!--   stat_lorenz() +  -->
-<!--   labs(title = "Lorenz Curve for Number of Opens") +  -->
-<!--   xlab("Cumulative proportion of subscribers") +  -->
-<!--   ylab("Ordinary Lorenz Curve") +  -->
-<!--   geom_abline(linetype = "dashed") +  -->
-<!--   annotate_ineq(subscrib_num_open$num_open, size = 5) -->
-<!-- ``` -->
-
-
+```{r}
+ggplot(mapping = aes(subscrib_num_clicks$num_clicks)) +
+  stat_lorenz() +
+  labs(title = "Lorenz Curve for Number of Clicks") +
+  xlab("Cumulative proportion of subscribers") +
+  ylab("Ordinary Lorenz Curve") +
+  geom_abline(linetype = "dashed") +
+  annotate_ineq(subscrib_num_clicks$num_clicks, size = 5)
+```
 
 
-# Trends in the Open Probability
+
+
+# Trends in the Click Probability
 
 ## Overview of the Data Used
 
-<!-- There are 16,291 unique subscribers in the data set, with 622,614 observations.  -->
+We focused on the probability that a given subscriber will click on at least one link in a given newsletter. In addition to the variables used in the open probability model, we also look at the following factors affecting the click probability:
 
-<!-- We focused on the probability that a given subscriber will open a weekly newsletter within a week of its sent date. If the subscriber opens the newsletter after a week or uses the newsletter to unsubscribe, we consider it a non-open. We examined several factors affecting the open probability: -->
+* Number of words in newsletter.
+* Number of links in newsletter.
+* Number of clickable pictures in newsletter.
+* Number of unclickable pictures in newsletter.
 
-<!-- * Trend over the date newsletter was sent out (2019-01-01 to 2020-12-31). -->
-<!-- * Whether newsletter was sent before or after start of the COVID pandemic on 2020-03-12. -->
-<!-- * Time of day newsletter was sent out (6:30 am to 8:40 pm). -->
-<!-- * Length of subject by number of characters. -->
+<!-- The top of the bars in the barplots and the dashed or shaded lines in the line graphs show the precision of the estimates (+/- 2 standard errors). For barplots, the black symbols on top of the bars -->
 
-<!-- <!-- The top of the bars in the barplots and the dashed or shaded lines in the line graphs show the precision of the estimates (+/- 2 standard errors). For barplots, the black symbols on top of the bars --> -->
+Below are 10 sample observations from the dataset, containing the variables mentioned above. The last variable, clicks, is the response variable of interest. 1 indicates that the subscriber clicked on any link in a given newsletter; 0 indicates that the subscriber didn't click on any link in a given newsletter.
 
-<!-- Below are 10 sample observations from the dataset. The last variable, week_open, is the response variable of interest. 1 indicates that the subscriber opened the newsletter within the week; 0 indicates that the subscriber received the newsletter but didn't open it. -->
+<!-- double-check how clicks were calculated -->
 
-<!-- ```{r} -->
-<!-- set.seed(106) -->
+```{r}
+set.seed(106)
 
-<!-- sample_idx <- sample(1:nrow(subscriber_open), size = 10) -->
+sample_idx <- sample(1:nrow(subscriber_clicks), size = 10)
 
-<!-- kable(subset(subscriber_open, select = c("date_sent", "subscriberid", "covid", -->
-<!--                                          "mins_since_midnight", "subject_length",  -->
-<!--                                          "week_open"))[sample_idx,],  -->
-<!--       row.names = FALSE) -->
-<!-- ``` -->
+kable(subset(subscriber_clicks, select = c("num_words", "num_links", "num_clickable_pics", 
+                                           "num_unclickable_pics", "clicks"))[sample_idx,],
+      row.names = FALSE)
+```
 
 ## Overview of Analysis
-
-For every factor of interest, we plotted a barplot to display any trends. 
-
-We also fitted a generalized additive mixed model to the data to confirm the trends shown in the barplots. Results from the model are more reliable than just using the barplots, because the model accounts for confounding and dependence between opens for the same subscriber.  
 
 The model uses a random sub-sample of 1,629 subscribers (63,897 observations) so it can finish in a reasonable amount of time.
 
 All plots show the confidence intervals of the estimates; two standard errors above and below the estimates are indicated on top of the bars in the barplots and by the dashed lines or shading in the line graphs. The true value can be expected to lie within two standard errors from the estimate. 
 
 ```{r}
-load("open_click_models/m1_clicks.RData")
+load("open_click_models/m3_clicks.RData")
 ```
 
 ```{r, include = FALSE}
-summary(m1)
+summary(m3)
 ```
 
 ```{r, include = FALSE}
-gam.check(m1)
+gam.check(m3, type = "deviance")
 ```
 
 ```{r}
@@ -111,61 +102,6 @@ logit <- function(x){
   log(x / (1 - x))
   
 }
-```
-
-## Bunch of plots
-
-```{r}
-plot_smooth(m1, view = "days_since_start", cond = list(covid = "Before"),
-            transform = expit, xlim = c(0, 436),
-            main = "Open Probability over Time Before COVID",
-            ylab = "Probability", xlab = "Date")
-```
-
-```{r}
-plot_smooth(m1, view = "days_since_start", cond = list(covid = "After"),
-            transform = expit, xlim = c(436, 728),
-            main = "Open Probability over Time After COVID",
-            ylab = "Probability", xlab = "Date")
-```
-
-
-
-```{r}
-plot_smooth(m1, view = "mins_since_midnight", cond = list(covid = "Before"),
-            transform = expit,
-            ylab = "Probability", xlab = "Date")
-```
-
-```{r}
-plot_smooth(m1, view = "mins_since_midnight", cond = list(covid = "After"),
-            transform = expit,
-            ylab = "Probability", xlab = "Date")
-```
-
-```{r}
-plot_smooth(m1, view = "num_words",
-            transform = expit,
-            ylab = "Probability")
-```
-
-```{r}
-plot_smooth(m1, view = "num_links",
-            transform = expit,
-            ylab = "Probability")
-```
-
-```{r}
-plot_smooth(m1, view = "num_clickable_pics",
-            transform = expit,
-            ylab = "Probability")
-```
-
-```{r}
-plot_smooth(m1, view = "num_unclickable_pics",
-            transform = expit,
-            ylab = "Probability")
-
 ```
 
 
@@ -420,4 +356,66 @@ Takeaways:
 
 
 
+
+
+## Bunch of plots
+
+```{r}
+plot_smooth(m3, view = "days_since_start", cond = list(covid = "Before"),
+            transform = expit, xlim = c(0, 436),
+            main = "Open Probability over Time Before COVID",
+            ylab = "Probability", xlab = "Date")
+```
+
+```{r}
+plot_smooth(m3, view = "days_since_start", cond = list(covid = "After"),
+            transform = expit, xlim = c(436, 728),
+            main = "Open Probability over Time After COVID",
+            ylab = "Probability", xlab = "Date")
+```
+
+
+
+```{r}
+plot_smooth(m3, view = "mins_since_midnight", cond = list(covid = "Before"),
+            transform = expit,
+            ylab = "Probability", xlab = "Date")
+```
+
+```{r}
+plot_smooth(m3, view = "mins_since_midnight", cond = list(covid = "After"),
+            transform = expit,
+            ylab = "Probability", xlab = "Date")
+```
+
+```{r}
+plot_smooth(m3, view = "subject_length",
+            transform = expit,
+            ylab = "Probability")
+```
+
+```{r}
+plot_smooth(m3, view = "num_words",
+            transform = expit,
+            ylab = "Probability")
+```
+
+```{r}
+plot_smooth(m3, view = "num_links",
+            transform = expit,
+            ylab = "Probability")
+```
+
+```{r}
+plot_smooth(m3, view = "num_clickable_pics",
+            transform = expit,
+            ylab = "Probability")
+```
+
+```{r}
+plot_smooth(m3, view = "num_unclickable_pics",
+            transform = expit,
+            ylab = "Probability")
+
+```
 

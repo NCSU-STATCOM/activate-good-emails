@@ -17,4 +17,4 @@ full_df = merge(x = link_characteristics,
                 by.y = c("date", "link"),
                 all = TRUE)
 
-write.csv(full_df, file = "link_counts_characteristics.csv")
+write.csv(full_df, file = "link_counts_characteristics.csv", row.names = FALSE)

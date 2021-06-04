@@ -24,7 +24,27 @@ library(gglorenz)
 load("open_click_models/subscriber_open.RData")
 ```
 
+# Executive Summary
 
+## Questions of Interest
+
+* What are the factors that increase the probability of a subscriber opening a newsletter within a week of its send date?
+  * What is the best time of day to send a newsletter?
+  * Does the email subject affect the open rate? 
+* How has the COVID pandemic affected the open rate? 
+
+## Statistical Analysis
+
+* Barplots to visually display trends
+* Statistical model to examine how factors interact
+* Results from the model to confirm the trends shown in the barplots
+
+## Takeaways
+
+* 10:30 am and 5:10 pm seem to be optimal times for sending the newsletter. 
+* Shorter subject headings (in terms of number of characters) are better.
+
+\newpage
 
 # Trends in the Open Probability
 
@@ -137,7 +157,7 @@ ggplot(month_dat, aes(x = month_grp, y = month_prop, fill = covid)) +
   
 ```
 
-The following plot shows the relative effect of the date the newsletter is sent out on the open probability (a negative relative effect corresponds to a decrease in probability, and a positive relative effect corresponds to an increase in probability) before the pandemic. There appears to be a seasonal trend.
+The following plot shows the relative effect of the date the newsletter is sent out on the open probability (a negative relative effect corresponds to a decrease in probability, and a positive relative effect corresponds to an increase in probability) before the pandemic. The red line at zero indicates no effect. There appears to be a seasonal trend.
 
 ```{r}
 plot(m4, select = 1, xlim = c(0, 436), main = "Open Probability over Time Before COVID", xlab = "Date", ylab = "Relative Effect", ylim = c(-5, 5.2), xaxt = "n")
@@ -148,6 +168,8 @@ axis(side = 1, at = c(0, 59, 120,
      labels = c("1/19", "3/19", "5/19",
                 "7/19", "9/19", "11/19", 
                 "1/20", "3/20"))
+
+abline(h = 0, col = "red")
 ```
 
 The above plot shows the partial effect of the date alone, without considering other covariates. The following plot shows the actual estimated probabilities over time under the following specific scenario:
@@ -156,12 +178,19 @@ The above plot shows the partial effect of the date alone, without considering o
 * The newsletter has the median subject length of 66 characters.
 
 ```{r}
+# to make the plots of actual estimated probabilities consistent on the y-axis
+
+ylim_span <- c(0, 0.30)
+```
+
+```{r}
 plot_smooth(m4, view = "days_since_start", cond = list(covid = "Before", 
                                                        mins_since_midnight = 630,
                                                        subject_length = 66),
             transform = expit, hide.label = TRUE, xlim = c(0, 436), print.summary = FALSE, 
             xaxt = "n", main = "Open Probability over Time Before COVID", 
-            ylab = "Probability", xlab = "Date")
+            ylab = "Probability", xlab = "Date", 
+            ylim = ylim_span + 0)
 
 axis(side = 1, at = c(0, 59, 120, 
                       181, 243, 304, 
@@ -180,6 +209,8 @@ axis(side = 1, at = c(456, 486, 547,
                       609, 670, 731), 
      labels = c("4/20", "5/20", "7/20", 
                 "9/20", "11/20", "1/21"))
+
+abline(h = 0, col = "red")
 ```
 
 The above plot shows the partial effect of the date alone, without considering other covariates. The following plot shows the actual estimated probabilities over time under the following specific scenario:
@@ -193,7 +224,8 @@ plot_smooth(m4, view = "days_since_start", cond = list(covid = "After",
                                                        subject_length = 66),
             transform = expit, hide.label = TRUE, xlim = c(436, 728), xaxt = "n", 
             main = "Open Probability over Time During COVID", xlab = "Date", ylab = "Probability",
-            print.summary = FALSE)
+            print.summary = FALSE, 
+            ylim = ylim_span + 0.09)
 
 axis(side = 1, at = c(456, 486, 547, 
                       609, 670, 731), 
@@ -202,9 +234,20 @@ axis(side = 1, at = c(456, 486, 547,
 
 ```
 
-Below shows the relative effect of covid, i.e. whether the newsletter was sent before or after the pandemic started. It appears that the open probability rises during the pandemic, but the effect is not significantly different than before the pandemic (see the dashed standard error bars). However, covid significantly affects how the open probability varies by date or hour of day the newsletter was sent. 
+Below shows the relative effect of COVID, i.e. whether the newsletter was sent after the pandemic started. It appears that the open probability rises after the pandemic starts, but the effect is not significantly different than before the pandemic (see the dashed standard error bars). However, COVID significantly affects how the open probability varies by date or hour of day the newsletter was sent. 
 
-![](covid_partial_effect.pdf)\
+```{r}
+plot(1, type = "n", xlim = c(-0.6, 0.6), ylim = c(-5.5, 5.5), xaxt = "n", 
+     xlab = "COVID", ylab = "Relative Effect", main = "Relative Effect of COVID")
+
+segments(x0 = -0.2, y0 = 1.202, x1 = 0.2)
+
+segments(x0 = -0.2, y0 = 1.202 - 2 * 2.068, x1 = 0.2, lty = "dashed")
+
+segments(x0 = -0.2, y0 = 1.202 + 2 * 2.068, x1 = 0.2, lty = "dashed")
+
+abline(h = 0, col = "red")
+```
 
 
 
@@ -262,11 +305,13 @@ ggplot(hour_dat, aes(x = hour_grp, y = hour_prop)) +
 The following plot shows the relative effect of the time of day the newsletter is sent out on the open probability (a negative relative effect corresponds to a decrease in probability, and a positive relative effect corresponds to an increase in probability) before the pandemic. It appears that there is a dip in the open probability at about 10 am.
 
 ```{r}
-plot(m4, select = 3, main = "Effect of Hour of Day on Open Probability, Before COVID", xlab = "Hour of Day", ylab = "Relative Effect", xaxt = "n", ylim = c(-1.5, 1.5))
+plot(m4, select = 3, main = "Effect of Hour of Day on Open Probability, Before COVID", xlab = "Hour of Day", ylab = "Relative Effect", xaxt = "n", ylim = c(-1.5, 1.5), xlim = c(6.8, 16.5) * 60)
 
 axis(side = 1, at = seq(420, 1200, by = 60), labels = c(seq(7, 20, by = 1)))
 
 abline(v = 600, col = "blue")
+
+abline(h = 0, col = "red")
 ```
 
 The above plot shows the partial effect of the time of day alone, without considering other covariates. The following plot shows the actual estimated probabilities by time of day under the following specific scenario:
@@ -280,7 +325,9 @@ plot_smooth(m4, view = "mins_since_midnight", cond = list(days_since_start = 334
                                                           covid = "Before"),
             transform = expit, hide.label = TRUE, 
             main = "Open Probability vs. Hour of Day, given other covariates", xlab = "Hour of Day", ylab = "Probability", xaxt = "n", 
-            print.summary = FALSE)
+            print.summary = FALSE, 
+            ylim = ylim_span + 0, 
+            xlim = c(6.8, 16.5) * 60)
 
 axis(side = 1, at = seq(420, 1200, by = 60), labels = c(seq(7, 20, by = 1)))
 
@@ -346,6 +393,8 @@ axis(side = 1, at = seq(420, 1200, by = 60), labels = c(seq(7, 20, by = 1)))
 abline(v = 630, col = "blue")
 
 abline(v = 1030, col = "blue")
+
+abline(h = 0, col = "red")
 ```
 
 The above plot shows the partial effect of the time of day alone, without considering other covariates. The following plot shows the actual estimated probabilities by time of day under the following specific scenario:
@@ -358,7 +407,8 @@ plot_smooth(m4, view = "mins_since_midnight", cond = list(days_since_start = 700
                                                           subject_length = 66),
             transform = expit, hide.label = TRUE, 
             main = "Open Probability vs. Hour of Day, given other covariates", xlab = "Hour of Day", ylab = "Probability", xaxt = "n", 
-            print.summary = FALSE)
+            print.summary = FALSE, 
+            ylim = ylim_span + 0)
 
 axis(side = 1, at = seq(420, 1200, by = 60), labels = c(seq(7, 20, by = 1)))
 
@@ -410,6 +460,7 @@ The following plot shows the relative effect of the subject length on the open p
 ```{r}
 plot(m4, select = 5, main = "Effect of Subject Length on Open Probability", xlab = "Subject Length in Characters", ylab = "Relative Effect", ylim = c(-1, 1))
 
+abline(h = 0, col = "red")
 ```
 
 The above plot shows the partial effect of the subject length alone, without considering other covariates. The following plot shows the actual estimated probabilities by subject length under the following specific scenario:
@@ -422,15 +473,9 @@ plot_smooth(m4, view = "subject_length", cond = list(days_since_start = 700,
                                                           mins_since_midnight = 630),
             transform = expit, hide.label = TRUE, 
             main = "Open Probability vs. Subject Length, given other covariates", xlab = "Subject Length", ylab = "Probability", 
-            print.summary = FALSE)
+            print.summary = FALSE, 
+            ylim = ylim_span + 0)
 ```
-
-
-
-Takeaways:
-
-* 10:30 am and 5:10 pm seem to be optimal times for sending the newsletter. 
-* Shorter subject headings (in terms of number of characters) are better.
 
 
 

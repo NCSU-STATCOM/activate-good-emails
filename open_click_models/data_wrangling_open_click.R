@@ -88,7 +88,7 @@ sub_agg_merged2 <- merge(subscriber_open, subset(pt_and_html_df,
                                                           "num_unclickable_pics", "date")),
                         by = "date")
 
-subscriber_clicks <- subset(sub_agg_merged2, select = c("subscriberid", "covid", 
+subscriber_clicks <- subset(sub_agg_merged2, select = c("date_sent", "subscriberid", "covid", 
                                                      "mins_since_midnight", "subject_length", 
                                                      "clicks", "days_since_start", "num_words", 
                                                      "num_links", "num_clickable_pics", 

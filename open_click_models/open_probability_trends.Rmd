@@ -234,7 +234,7 @@ axis(side = 1, at = c(456, 486, 547,
 
 ```
 
-Below shows the relative effect of COVID, i.e. whether the newsletter was sent after the pandemic started. It appears that the open probability rises after the pandemic starts, but the effect is not significantly different than before the pandemic (see the dashed standard error bars). However, COVID significantly affects how the open probability varies by date or hour of day the newsletter was sent. 
+Below shows the relative effect of COVID, i.e. whether the newsletter was sent after the pandemic started (solid line). It appears that the open probability rises after the pandemic starts, but the effect is not significant (see the dashed standard error bars). However, COVID significantly affects how the open probability varies by date or hour of day the newsletter was sent. 
 
 ```{r}
 plot(1, type = "n", xlim = c(-0.6, 0.6), ylim = c(-5.5, 5.5), xaxt = "n", 

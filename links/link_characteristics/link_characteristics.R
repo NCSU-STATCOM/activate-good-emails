@@ -122,8 +122,6 @@ link_info_df_no_dup <- link_info_df_no_dup[text_dup == FALSE,]
 
 link_info_df_no_dup <- rbind(link_info_df_no_dup, link_info_df[link_info_df$is_image == TRUE,])
 
-link_info_df_no_dup <- subset(link_info_df_no_dup, select = -dup_after_first)
-
 
 
 write.csv(link_info_df_no_dup, file = "links/link_characteristics/link_characteristics_no_dup.csv", 

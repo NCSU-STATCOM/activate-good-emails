@@ -1,6 +1,7 @@
 
 library(rvest)
 library(xml2)
+library(stringr)
 
 #' Function to return dataframe mapping the link to its characteristics
 #'
@@ -117,7 +118,13 @@ text_dup <- duplicated(cbind(link_info_df_no_dup$date, link_info_df_no_dup$addre
 
 link_info_df_no_dup <- link_info_df_no_dup[text_dup == FALSE,]
 
+# add images back in, at the bottom
+
+link_info_df_no_dup <- rbind(link_info_df_no_dup, link_info_df[link_info_df$is_image == TRUE,])
+
 link_info_df_no_dup <- subset(link_info_df_no_dup, select = -dup_after_first)
+
+
 
 write.csv(link_info_df_no_dup, file = "links/link_characteristics/link_characteristics_no_dup.csv", 
           row.names = FALSE)

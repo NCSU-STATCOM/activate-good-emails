@@ -21,6 +21,59 @@ link_characteristics <- function(newsletter) {
   image_nodeset <- newsletter %>% html_nodes("a") %>% html_node("img")
   link_info$is_image <- sapply(image_nodeset, function(node) !is.na(node))
   
+  # retrieve html node attributes related to image dimensions
+  # notes: the width is the only relevant feature. The height is either 
+  # 65 (for social media links) or "auto". 
+  # width may be a number or 100%.
+  link_info$image_width <- newsletter %>% html_nodes("a") %>% 
+    html_node("img") %>% html_attr("width")
+  # link_info$image_height <- newsletter %>% html_nodes("a") %>% 
+  #   html_node("img") %>% html_attr("height")
+  # link_info$image_style <- newsletter %>% html_nodes("a") %>% 
+  #   html_node("img") %>% html_attr("style")
+  
+  # If width is 100%, change it to 199 if it's in a group of three, 
+  # and 280 if it's in a group of two.
+  
+  # first make a helper variable nbr100perc with values NA, 2, and 3
+  nbr100perc <- rep(NA, length = length(address))
+  # nbr100perc is 2 if image is 100% and one neighbor is also 100%
+  image_width <- link_info$image_width
+  image_width[is.na(image_width)] <- 0
+  for (i in 1:length(address)) {
+    if (image_width[i] == "100%") {
+      if (i > 1 & image_width[i - 1] == "100%") {
+        nbr100perc[i] <- 2
+      }
+      else if (i < length(address) & image_width[i + 1] == "100%") {
+        nbr100perc[i] <- 2
+      }
+    }
+  }
+  # nbr100perc is 3 if image is 100% and both of its neighbors are also 100%
+  # additionally, those neighbors will have nbr100perc of 3, so 
+  # nbr100perc will then indicate whether a 100% image is in a group of 2 or 3
+  for (i in 1:length(address)) {
+    if (image_width[i] == "100%") {
+      if (i > 1 & image_width[i - 1] == "100%") {
+        if (i < length(address) & image_width[i + 1] == "100%") {
+          nbr100perc[i] <- 3
+          nbr100perc[i - 1] <- 3
+          nbr100perc[i + 1] <- 3
+        }
+      }
+    }
+  }
+  
+  # If width is 100%, change it to 199 if it's in a group of three, 
+  # and 280 if it's in a group of two.
+  link_info$image_width <- ifelse(image_width == "100%", ifelse(
+  nbr100perc == 2, 280, ifelse(nbr100perc == 3, 199, link_info$image_width)),
+  link_info$image_width)
+  
+  # turn image_width into numeric
+  link_info$image_width <- as.numeric(link_info$image_width)
+  
   # indicator of whether link is bolded (has strong tag)
   strong_nodeset <- newsletter %>% html_nodes("a") %>% html_node("strong")
   link_info$bolded <- sapply(strong_nodeset, function(node) !is.na(node))
@@ -110,7 +163,6 @@ write.csv(link_info_df, file = "links/link_characteristics/link_characteristics.
 
 # make another version, removing image links and any duplicates 
 # that isn't the first text link
-# also remove no duplicates-after-the-first-one flag
 
 link_info_df_no_dup <- link_info_df[link_info_df$is_image == FALSE,]
 

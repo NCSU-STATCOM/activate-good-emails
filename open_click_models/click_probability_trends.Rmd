@@ -26,11 +26,28 @@ load("open_click_models/subscriber_clicks.RData")
 
 # Executive Summary
 
+## Questions of Interest
 
+* What are the factors that increase the probability of a subscriber clicking on any link in a newsletter?
+  * Does the time of day the newsletter is sent affect the click rate?
+  * Does the email subject affect the click rate? 
+  * Does the content of the newsletter (word count, number of links, number of pictures) affect the click rate? 
+* How has the COVID pandemic affected the click rate? 
+
+## Statistical Analysis
+
+* Barplots to visually display trends
+* Statistical model to examine how factors interact
+* Results from the model to confirm the trends shown in the barplots
 
 ## Takeaways
 
-* Because the click probability is already quite low, changing the factors would not affect the click probability as much as it would affect the open probability. Thus, we recommend trying to increase the open rate before trying to change the click rate. 
+* Because the click probability is already quite low, changing the time of day or subject length would not affect the click probability as much as it would affect the open probability. Thus, we recommend trying to increase the open rate before trying to change the click rate with those factors. 
+* Before the pandemic, there were less clicks if the newsletter was sent around 9 am and more clicks if the newsletter was sent around 1 pm. However, during the pandemic, the time of day the newsletter was sent didn't affect the click rate. 
+* A subject length of 70 characters leads to the most clicks. 
+* A higher word count is associated with less clicks.
+* More text or image links lead to more clicks.
+* The optimal number of clickable pictures appears to be 8. More clickable pictures is not necessarily better.
 
 \newpage
 
@@ -40,14 +57,21 @@ load("open_click_models/subscriber_clicks.RData")
 
 There are 16,291 unique subscribers in the data set, with 622,614 observations. 
 
-We focused on the probability that a given subscriber will click on at least one link in a given newsletter. In addition to the variables used in the open probability model, we also look at the following factors affecting the click probability:
+We focused on the probability that a given subscriber will click on at least one link in a given newsletter. In addition to the variables used in the open probability model,
+
+* Trend over the date newsletter was sent out (2019-01-01 to 2020-12-31).
+* Whether newsletter was sent before or after start of the COVID pandemic on 2020-03-12.
+* Time of day newsletter was sent out (6:30 am to 8:40 pm).
+* Length of subject by number of characters.
+
+we also look at the following factors related to the content within the newsletter:
 
 * Number of words in newsletter.
-* Number of links in newsletter.
+* Number of links (text or image) in newsletter.
 * Number of clickable pictures in newsletter.
 * Number of unclickable pictures in newsletter.
 
-Below are 10 sample observations from the dataset, containing the variables mentioned above. The last variable, clicks, is the response variable of interest. 1 indicates that the subscriber clicked on any link in a given newsletter; 0 indicates that the subscriber didn't click on any link in a given newsletter.
+Below are 10 sample observations from the dataset, containing the four "content" variables mentioned above. The last variable, clicks, is the response variable of interest. 1 indicates that the subscriber clicked on any link in a given newsletter; 0 indicates that the subscriber didn't click on any link in a given newsletter.
 
 ```{r}
 set.seed(106)
@@ -81,7 +105,7 @@ ggplot(mapping = aes(subscrib_num_clicks$num_clicks)) +
 
 The generalized additive mixed model uses a random sub-sample of 1,629 subscribers (63,897 observations) so it can finish in a reasonable amount of time.
 
-All plots show the confidence intervals of the estimates; two standard errors above and below the estimates are indicated on top of the bars in the barplots and by the dashed lines or shading in the line graphs. The true value can be expected to lie within two standard errors from the estimate. 
+All plots show 95% confidence intervals of the estimates; two standard errors above and below the estimates are indicated on top of the bars in the barplots and by the dashed lines or shading in the line graphs. The true value can be expected to lie within two standard errors from the estimate. 
 
 ```{r}
 load("open_click_models/m3_clicks.RData")
@@ -140,7 +164,7 @@ ggplot(month_dat, aes(x = month_grp, y = month_prop, fill = covid)) +
 
 ```
 
-The following plot shows the relative effect of the date the newsletter is sent out on the click probability (a negative relative effect corresponds to a decrease in probability, and a positive relative effect corresponds to an increase in probability) before the pandemic. There is very little change pre-pandemic.
+The following plot shows the relative effect of the date the newsletter is sent out on the click probability (a negative relative effect corresponds to a decrease in probability, and a positive relative effect corresponds to an increase in probability) before the pandemic. There is a slight increase over time leading up to the pandemic.
 
 ```{r}
 plot(m3, select = 1, xlim = c(0, 436), main = "Click Probability over Time Before COVID", xlab = "Date", ylab = "Relative Effect", ylim = c(-5, 5.2), xaxt = "n")
@@ -167,7 +191,7 @@ The above plot shows the partial effect of the date alone, without considering o
 ```{r}
 # to make the plots of actual estimated probabilities consistent on the y-axis
 
-ylim_span <- c(0, 0.12)
+ylim_span <- c(0, 0.08)
 ```
 
 ```{r}
@@ -225,7 +249,7 @@ axis(side = 1, at = c(456, 486, 547,
 
 ```
 
-Below shows the relative effect of COVID, i.e. whether the newsletter was sent after the pandemic started (solid line). It appears that the click probability rises after the pandemic starts, but the effect is not significant (see the dashed standard error bars). However, COVID significantly affects how the click probability varies by date or hour of day the newsletter was sent. 
+Below shows the relative effect of COVID (solid line), i.e. whether the newsletter was sent after the pandemic started. It appears that the click probability rises after the pandemic starts, but the effect is not significant (see the dashed standard error bars). However, COVID significantly affects how the click probability varies by date or hour of day the newsletter was sent. 
 
 ```{r}
 plot(1, type = "n", xlim = c(-0.6, 0.6), ylim = c(-5.5, 5.5), xaxt = "n", 
@@ -452,7 +476,7 @@ ggplot(length_dat, aes(x = length_grp, y = length_prop)) +
 
 ```
 
-The following plot shows the relative effect of the subject length on the click probability. The maximum click probability corresponds to a subject length of approximately 
+The following plot shows the relative effect of the subject length on the click probability. The maximum click probability corresponds to a subject length of approximately 70 characters.
 
 ```{r}
 plot(m3, select = 5, main = "Effect of Subject Length on Click Probability", xlab = "Subject Length in Characters", ylab = "Relative Effect", ylim = c(-1, 1))
@@ -466,6 +490,10 @@ The above plot shows the partial effect of the subject length alone, without con
 
 * The newsletter was sent out on December 1, 2020.
 * The newsletter was sent out at 10:30 am.
+* The newsletter has the median number of words at 392 words.
+* The newsletter has the median number of links at 24 links.
+* The newsletter has the median number of clickable pictures at 7.
+* The newsletter has the median number of unclickable pictures at 0.
 
 ```{r}
 plot_smooth(m3, view = "subject_length", cond = list(days_since_start = 700, 
@@ -478,69 +506,273 @@ plot_smooth(m3, view = "subject_length", cond = list(days_since_start = 700,
 abline(v = 70, col = "blue")
 ```
 
-
-
-
-
-
-## Bunch of plots
+## Word Count Trend
 
 ```{r}
-plot_smooth(m3, view = "days_since_start", cond = list(covid = "Before"),
-            transform = expit, xlim = c(0, 436),
-            main = "Click Probability over Time Before COVID",
-            ylab = "Probability", xlab = "Date")
+# wc_breaks <- seq(35, 102, by = 15)
+# 
+# wc_breaks[length(wc_breaks)] <- max(subscriber_clicks$subject_length)
+# 
+# wc_grp <- cut(subscriber_clicks$subject_length, breaks = wc_breaks)
+
+wc_grp <- discretize(subscriber_clicks$num_words, method = "frequency", breaks = 7)
+
+wc_tab <- table(subscriber_clicks$clicks, wc_grp)
 ```
+
+<!-- ```{r} -->
+<!-- barplot(prop.table(wc_tab, margin = 2)) -->
+<!-- ``` -->
 
 ```{r}
-plot_smooth(m3, view = "days_since_start", cond = list(covid = "After"),
-            transform = expit, xlim = c(436, 728),
-            main = "Click Probability over Time After COVID",
-            ylab = "Probability", xlab = "Date")
+wc_dat <- data.frame(wc_grp = colnames(wc_tab), wc_prop = prop.table(wc_tab, margin = 2)[2, ])
+
+wc_dat$wc_grp <- factor(wc_dat$wc_grp, levels = wc_dat$wc_grp)
+
+wc_dat$se <- sqrt(wc_dat$wc_prop * (1 - wc_dat$wc_prop) / colSums(wc_tab))
 ```
 
-
+The below barplot shows the proportion of subscribers that clicked on a link in the newsletter, given that the newsletter word count was within a specific interval. 
 
 ```{r}
-plot_smooth(m3, view = "mins_since_midnight", cond = list(covid = "Before"),
-            transform = expit,
-            ylab = "Probability", xlab = "Date")
+ggplot(wc_dat, aes(x = wc_grp, y = wc_prop)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = wc_prop - 2 * se, ymax = wc_prop + 2 * se), width = 0.2) +
+  ggtitle("Proportion of Clicks by Word Count") +
+  xlab("Word Count") +
+  ylab("Click Proportion")
+
 ```
+
+The following plot shows the relative effect of the word count on the click probability. There appears to be a downward trend in click probability as the word count increases.
 
 ```{r}
-plot_smooth(m3, view = "mins_since_midnight", cond = list(covid = "After"),
-            transform = expit,
-            ylab = "Probability", xlab = "Date")
+plot(m3, select = 6, main = "Effect of Word Count on Click Probability", xlab = "Word Count", ylab = "Relative Effect", ylim = c(-1, 1))
+
+abline(h = 0, col = "red")
 ```
+
+The above plot shows the partial effect of the word count alone, without considering other covariates. The following plot shows the actual estimated probabilities by word count under the following specific scenario:
+
+* The newsletter was sent out on December 1, 2020.
+* The newsletter was sent out at 10:30 am.
+* The newsletter has the median subject length of 66 characters.
+* The newsletter has the median number of links at 24 links.
+* The newsletter has the median number of clickable pictures at 7.
+* The newsletter has the median number of unclickable pictures at 0.
 
 ```{r}
-plot_smooth(m3, view = "subject_length",
-            transform = expit,
-            ylab = "Probability")
+plot_smooth(m3, view = "num_words", cond = list(days_since_start = 700, 
+                                                          mins_since_midnight = 630),
+            transform = expit, hide.label = TRUE, 
+            main = "Click Probability vs. Word Count, given other covariates", xlab = "Word Count", ylab = "Probability", 
+            print.summary = FALSE, 
+            ylim = ylim_span + 0)
+
 ```
+
+## Number of Links Trend
 
 ```{r}
-plot_smooth(m3, view = "num_words",
-            transform = expit,
-            ylab = "Probability")
+lc_breaks <- seq(12, 39, by = 5)
+
+lc_breaks[length(lc_breaks)] <- max(subscriber_clicks$num_links)
+
+lc_grp <- cut(subscriber_clicks$num_links, breaks = lc_breaks)
+
+# lc_grp <- discretize(subscriber_clicks$num_words, method = "frequency", breaks = 7)
+
+lc_tab <- table(subscriber_clicks$clicks, lc_grp)
 ```
+
+<!-- ```{r} -->
+<!-- barplot(prop.table(lc_tab, margin = 2)) -->
+<!-- ``` -->
 
 ```{r}
-plot_smooth(m3, view = "num_links",
-            transform = expit,
-            ylab = "Probability")
+lc_dat <- data.frame(lc_grp = colnames(lc_tab), lc_prop = prop.table(lc_tab, margin = 2)[2, ])
+
+lc_dat$lc_grp <- factor(lc_dat$lc_grp, levels = lc_dat$lc_grp)
+
+lc_dat$se <- sqrt(lc_dat$lc_prop * (1 - lc_dat$lc_prop) / colSums(lc_tab))
 ```
+
+The below barplot shows the proportion of subscribers that clicked on a link in the newsletter, given that the newsletter link count was within a specific interval. 
 
 ```{r}
-plot_smooth(m3, view = "num_clickable_pics",
-            transform = expit,
-            ylab = "Probability")
+ggplot(lc_dat, aes(x = lc_grp, y = lc_prop)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = lc_prop - 2 * se, ymax = lc_prop + 2 * se), width = 0.2) +
+  ggtitle("Proportion of Clicks by Link Count") +
+  xlab("Link Count") +
+  ylab("Click Proportion")
+
 ```
+
+The following plot shows the relative effect of the link count on the click probability. More links is associated with a higher click probability.
 
 ```{r}
-plot_smooth(m3, view = "num_unclickable_pics",
-            transform = expit,
-            ylab = "Probability")
+plot(m3, select = 7, main = "Effect of Link Count on Click Probability", xlab = "Link Count", ylab = "Relative Effect", ylim = c(-1, 1))
+
+abline(h = 0, col = "red")
+```
+
+The above plot shows the partial effect of the link count alone, without considering other covariates. The following plot shows the actual estimated probabilities by link count under the following specific scenario:
+
+* The newsletter was sent out on December 1, 2020.
+* The newsletter was sent out at 10:30 am.
+* The newsletter has the median subject length of 66 characters.
+* The newsletter has the median number of words at 392 words.
+* The newsletter has the median number of clickable pictures at 7.
+* The newsletter has the median number of unclickable pictures at 0.
+
+```{r}
+plot_smooth(m3, view = "num_links", cond = list(days_since_start = 700, 
+                                                          mins_since_midnight = 630),
+            transform = expit, hide.label = TRUE, 
+            main = "Click Probability vs. Link Count, given other covariates", xlab = "Link Count", ylab = "Probability", 
+            print.summary = FALSE, 
+            ylim = ylim_span + 0)
 
 ```
+
+
+
+## Number of Clickable Pictures Trend
+
+```{r}
+# cpc_breaks <- 5:15
+# 
+# cpc_breaks[length(cpc_breaks)] <- max(subscriber_clicks$num_clickable_pics)
+
+# cpc_grp <- cut(subscriber_clicks$num_clickable_pics, breaks = cpc_breaks)
+
+# cpc_grp <- discretize(subscriber_clicks$num_words, method = "frequency", breaks = 7)
+
+cpc_tab <- table(subscriber_clicks$clicks, subscriber_clicks$num_clickable_pics)
+```
+
+<!-- ```{r} -->
+<!-- barplot(prop.table(cpc_tab, margin = 2)) -->
+<!-- ``` -->
+
+```{r}
+cpc_dat <- data.frame(cpc_grp = colnames(cpc_tab), cpc_prop = prop.table(cpc_tab, margin = 2)[2, ])
+
+cpc_dat$cpc_grp <- factor(cpc_dat$cpc_grp, levels = cpc_dat$cpc_grp)
+
+cpc_dat$se <- sqrt(cpc_dat$cpc_prop * (1 - cpc_dat$cpc_prop) / colSums(cpc_tab))
+```
+
+The below barplot shows the proportion of subscribers that clicked on a link in the newsletter, given the number of clickable pictures in the newsletter. 
+
+```{r, warning = F}
+ggplot(cpc_dat, aes(x = cpc_grp, y = cpc_prop)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = cpc_prop - 2 * se, ymax = cpc_prop + 2 * se), width = 0.2) +
+  ggtitle("Proportion of Clicks by Number of Clickable Pictures") +
+  xlab("Link Count") +
+  ylab("Click Proportion")
+
+```
+
+The following plot shows the relative effect of the number of clickable pictures on the click probability. The optimal number of clickable pictures appears to be 8. 
+
+```{r}
+plot(m3, select = 8, main = "Effect of Number of Clickable Pictures on Click Probability", xlab = "Number of Clickable Pictures", ylab = "Relative Effect", ylim = c(-1, 1))
+
+abline(h = 0, col = "red")
+
+abline(v = 8, col = "blue")
+```
+
+The above plot shows the partial effect of the number of clickable pictures alone, without considering other covariates. The following plot shows the actual estimated probabilities by number of clickable pictures under the following specific scenario:
+
+* The newsletter was sent out on December 1, 2020.
+* The newsletter was sent out at 10:30 am.
+* The newsletter has the median subject length of 66 characters.
+* The newsletter has the median number of words at 392 words.
+* The newsletter has the median number of links at 24 links.
+* The newsletter has the median number of unclickable pictures at 0.
+
+```{r}
+plot_smooth(m3, view = "num_clickable_pics", cond = list(days_since_start = 700, 
+                                                          mins_since_midnight = 630),
+            transform = expit, hide.label = TRUE, 
+            main = "Click Probability vs. Number of Clickable Pictures", xlab = "Number of Clickable Pictures", ylab = "Probability", 
+            print.summary = FALSE, 
+            ylim = ylim_span + 0)
+
+```
+
+
+
+## Number of Unclickable Pictures Trend
+
+```{r}
+# upc_breaks <- 0:5
+# 
+# upc_breaks[length(upc_breaks)] <- max(subscriber_clicks$num_unclickable_pics)
+# 
+# upc_grp <- cut(subscriber_clicks$num_unclickable_pics, breaks = upc_breaks)
+
+# upc_grp <- discretize(subscriber_clicks$num_words, method = "frequency", breaks = 7)
+
+upc_tab <- table(subscriber_clicks$clicks, subscriber_clicks$num_unclickable_pics)
+```
+
+<!-- ```{r} -->
+<!-- barplot(prop.table(upc_tab, margin = 2)) -->
+<!-- ``` -->
+
+```{r}
+upc_dat <- data.frame(upc_grp = colnames(upc_tab), upc_prop = prop.table(upc_tab, margin = 2)[2, ])
+
+upc_dat$upc_grp <- factor(upc_dat$upc_grp, levels = upc_dat$upc_grp)
+
+upc_dat$se <- sqrt(upc_dat$upc_prop * (1 - upc_dat$upc_prop) / colSums(upc_tab))
+```
+
+The below barplot shows the proportion of subscribers that clicked on a link in the newsletter, given the number of unclickable pictures in the newsletter. 
+
+```{r, warning = F}
+ggplot(upc_dat, aes(x = upc_grp, y = upc_prop)) +
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = upc_prop - 2 * se, ymax = upc_prop + 2 * se), width = 0.2) +
+  ggtitle("Proportion of Clicks by Number of Unclickable Pictures") +
+  xlab("Link Count") +
+  ylab("Click Proportion")
+
+```
+
+The following plot shows the relative effect of the number of unclickable pictures on the click probability. The number of unclickable pictures does not have a significant effect on click probability
+
+```{r}
+plot(m3, select = 9, main = "Effect of Number of Unclickable Pictures on Click Probability", xlab = "Number of Unclickable Pictures", ylab = "Relative Effect", ylim = c(-1, 1))
+
+abline(h = 0, col = "red")
+
+abline(v = 8, col = "blue")
+```
+
+The above plot shows the partial effect of the number of unclickable pictures alone, without considering other covariates. The following plot shows the actual estimated probabilities by number of unclickable pictures under the following specific scenario:
+
+* The newsletter was sent out on December 1, 2020.
+* The newsletter was sent out at 10:30 am.
+* The newsletter has the median subject length of 66 characters.
+* The newsletter has the median number of words at 392 words.
+* The newsletter has the median number of links at 24 links.
+* The newsletter has the median number of clickable pictures at 7.
+
+```{r}
+plot_smooth(m3, view = "num_unclickable_pics", cond = list(days_since_start = 700, 
+                                                          mins_since_midnight = 630),
+            transform = expit, hide.label = TRUE, 
+            main = "Click Probability vs. Number of Unclickable Pictures", xlab = "Number of Unclickable Pictures", ylab = "Probability", 
+            print.summary = FALSE, 
+            ylim = ylim_span + 0)
+
+```
+
+
 

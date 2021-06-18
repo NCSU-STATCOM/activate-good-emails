@@ -46,7 +46,7 @@ for(row in 1:nrow(link_df)){
   
   date_fix = lapply(unlist(unique(date)), clean_date)
   
-  link_df$dates_sent[row] = sort(unlist(date_fix))
+  link_df$dates_sent[row] = paste(sort(unlist(date_fix)), collapse = ", ")
 }
 
 

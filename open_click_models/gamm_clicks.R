@@ -42,3 +42,44 @@ proc.time() - ptm
 
 
 
+# I need more basis functions for some covariates
+
+ptm <- proc.time()
+
+m2 <- bam(clicks ~ covid + 
+            s(days_since_start, by = covid, k = 27) + 
+            s(mins_since_midnight, by = covid, k = 27) + 
+            s(subject_length) + 
+            s(num_words, k = 27) + 
+            s(num_links, k = 22) + 
+            s(num_clickable_pics) + # 10 unique values
+            s(num_unclickable_pics, k = 5) + # 5 unique values
+            s(subscriberid, bs = "re"), 
+          family = "binomial",
+          data = dat_sample, 
+          discrete = TRUE)
+
+save(m2, file = "open_click_models/m2_clicks.RData")
+
+proc.time() - ptm
+
+
+
+ptm <- proc.time()
+
+m3 <- bam(clicks ~ covid + 
+            s(days_since_start, by = covid, k = 54) + 
+            s(mins_since_midnight, by = covid, k = 27) + 
+            s(subject_length) + 
+            s(num_words, k = 27) + 
+            s(num_links, k = 22) + 
+            s(num_clickable_pics) + # 10 unique values
+            s(num_unclickable_pics, k = 5) + # 5 unique values
+            s(subscriberid, bs = "re"), 
+          family = "binomial",
+          data = dat_sample, 
+          discrete = TRUE)
+
+save(m3, file = "open_click_models/m3_clicks.RData")
+
+proc.time() - ptm

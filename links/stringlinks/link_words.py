@@ -164,10 +164,37 @@ for i in range(len(files)):
     link_prop = [f_list.index(string)/len(f_list) for string in link_strings]
         
     # Remove filler words (words not capitalized)
-    link_strings_clean = [re.sub(r'\b[a-z]+\b', '', string) for string in link_strings]
+    link_strings_clean1 = [re.sub(r'\b[a-z]+\b', '', string) for string in link_strings]
     
     # Remove extra spaces
-    link_strings_clean = [re.sub('\s+', ' ', string) for string in link_strings_clean]
+    link_strings_clean1 = [re.sub('\s+', ' ', string) for string in link_strings_clean1]
+    
+    # Check that there aren't multiple links in a line
+    for j in range(len(link_strings_clean1)):
+        mult = len(re.findall('[[0-9][0-9]]', link_strings_clean1[j]))
+        if mult > 1:
+            # replace the first one
+            bad_string = link_strings_clean1[j]
+            string_split = bad_string.split(']')
+            string_split = [s + ']' for s in string_split]
+            link_strings_clean1.extend(string_split)
+            link_strings_clean1.remove(bad_string)
+            
+            link_prop_temp = link_prop[j]
+            link_prop.extend([link_prop_temp]*len(string_split))
+            del link_prop[j]
+            
+    # put the links and the props in a df
+    links_props_df = pd.DataFrame({'string': link_strings_clean1,
+                                   'doc_prop': link_prop})
+            
+    # reclean
+    link_strings_clean = [string for string in link_strings_clean1 if (re.search('[[0-9][0-9]]', string) is not None)]
+    
+    # merge in the cleaned strings to keep track of the correct props
+    link_clean = pd.DataFrame({'string': link_strings_clean})
+    links_props_df = links_props_df.merge(link_clean)
+    
     
     # Get the link numbers
     link_num = [re.search('[[0-9][0-9]]', string).group() for string in link_strings_clean]
@@ -188,11 +215,11 @@ for i in range(len(files)):
     # Convert into a dataframe to merge in the list of links
     link_strings_df = pd.DataFrame( {'link_num': link_num, 
                                      'string': link_strings_nonums,
-                                     'doc_prop': link_prop})
+                                     'doc_prop': links_props_df.doc_prop})
     
     # Get a list of the actual links in the newsletter
     idx = f_list.index('References') + 2
-    link_html = [string for string in f_list[idx:] if re.search('[1-9]\.', string) is not None]
+    link_html = [string for string in f_list[idx:] if re.search('[1-9].', string) is not None]
     link_num = [string[:re.search('\.', string).span()[0]] for string in link_html]
     
     # Clean the htmls to remove the number

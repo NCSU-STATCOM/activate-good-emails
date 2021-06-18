@@ -129,4 +129,20 @@ for (i in 1:length(dates)) {
 
 
 links <- read_excel("links/stringlinks/UniqueLinks.xlsx")
+
+
+
+
+link_count_chars <- read.csv("links/link_counts_characteristics.csv", header = T)
+
+link_cat <- read.csv("links/stringlinks/intermediate/all_string_html_cat.csv",
+                             header = T)
+
+link_doc_prop <- read.csv("links/stringlinks/intermediate/all_string_html.csv",
+                     header = T)
+
+
+
+full_link_df <- read.csv("links/full_link_dataset.csv",
+                          header = T)
   

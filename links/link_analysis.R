@@ -14,7 +14,7 @@ opp_data = full_data %>%
                 filter(grepl("opportunity/\\d+", link))
 
 length(unique(opp_data$link))
-# there are 138 unique opportunities
+# there are 174 unique opportunities
 
 
 link_df = as.data.frame(sort(table(opp_data$link), decreasing= TRUE))
@@ -46,11 +46,11 @@ for(row in 1:nrow(link_df)){
   
   date_fix = lapply(unlist(unique(date)), clean_date)
   
-  link_df$dates_sent[row][[1]] = sort(unlist(date_fix))
+  link_df$dates_sent[row] = sort(unlist(date_fix))
 }
 
 
-save(link_df, file="link_df.RData")
+save(link_df, file="links/link_df.RData")
 
 
 

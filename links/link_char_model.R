@@ -60,14 +60,23 @@ prop_df$mean <- prop_df$clicks/prop_df$count
 ggplot(data = prop_df, aes(x = covid_ind, y = mean)) + geom_bar(stat = 'identity') +
   labs(x = 'During COVID?', y = 'Average Number of Clicks')
 
-# Were people more likely to click on something with an image?
-prop_df <- aggregate(cbind(clicks, count) ~ image_assoc, data = link_char_count_clean, FUN = sum)
+# top 5 colors overall
+prop_df <- aggregate(cbind(clicks, count) ~ color_name, data = link_char_count_clean, FUN = sum)
 prop_df$mean <- prop_df$clicks/prop_df$count
-ggplot(data = prop_df, aes(x = image_assoc, y = mean)) + geom_bar(stat = 'identity') +
-  labs(x = 'During COVID?', y = 'Average Number of Clicks')
+prop_df <- na.omit(prop_df)
+top5 <- prop_df[order(-prop_df$mean),][1:5,]
+ggplot(data = top5, aes(x = color_name, y = mean)) + geom_bar(stat = 'identity') +
+  labs(x = 'Top 5 Colors Overall', y = 'Average Number of Clicks')
 
-# top 5 colors
-# click
+# top 5 colors that were used more than once
+used2x <- prop_df[prop_df$count>1,]
+top5 <- used2x[order(-used2x$mean),][1:5,]
+ggplot(data = top5, aes(x = color_name, y = mean)) + geom_bar(stat = 'identity') +
+  labs(x = 'Top 5 Colors for Colors Used More than Once', y = 'Average Number of Clicks')
+
+# Look at the distribution of the number of clicks
+ggplot(data = link_char_count_clean) + geom_histogram(aes(x = clicks))
+click_dist <- aggregate(count~clicks, data = link_char_count_clean, FUN = sum)
 
 # Look at the other variables
 pairs(link_char_count_clean[c('clicks', 'link_num', 'font_size', 'hour')])
@@ -85,6 +94,10 @@ ggplot() + geom_point(aes(text_only$clicks, text_lm$fitted.values)) +
   labs(title = 'Observed Number of Clicks vs. Fitted Values')
 
 plot(text_only$clicks, text_lm$fitted.values)
+
+# check a boxcox transformation of the clicks
+text_only[text_only$clicks == 0,]$clicks <- 500
+boxcox(text_lm)
 
 # transform the number of clicks
 text_only$sqrt_click <- sqrt(text_only$clicks)

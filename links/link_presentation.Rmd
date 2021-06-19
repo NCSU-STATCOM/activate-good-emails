@@ -16,7 +16,7 @@ This table shows the number of unique people that clicked each "opportunity link
 ```{r echo=FALSE}
 library(knitr)
 # library(kableExtra)
-load("../link_df.RData")
+load("links/link_df.RData")
 
 # try fixing hyperlinks
 

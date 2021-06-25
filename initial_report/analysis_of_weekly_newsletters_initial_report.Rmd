@@ -3,9 +3,21 @@ title: "Analysis of Weekly Newsletters: Initial Report"
 output: pdf_document
 ---
 
-The open percentage is 
+# Executive Summary
 
-$$\mathrm{Open \ \%} = \frac{\mathrm{number \ of \ contacts \ who \ opened \ the \ email}}{\mathrm{number \ of \ contacts \ sent \ to}} \times 100\%$$
+## Questions of Interest
+
+* 
+
+## Statistical Analysis
+
+* 
+
+## Takeaways
+
+* The next two reports, "Trends in the Open Probability" and "Trends in the Click Probability," will delve further into how various factors affect the open and click rate. 
+
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -17,13 +29,54 @@ library(ggplot2)
 library(scales)
 library(lubridate)
 library(GGally)
+library(here)
+library(knitr)
+
+i_am("initial_report/analysis_of_weekly_newsletters_initial_report.Rmd")
 ```
 
 ```{r}
-load("weeklies1.RData")
+load(here("initial_report", "weeklies1.RData"))
 ```
 
+## Overview of the Data Used
+
+Newsletter level (as opposed to subscriber level)
+
+We focus on 54 newsletters, sent roughly weekly in the years 2019 and 2020. For this initial report, we look at aggregate statistics for the newsletters. 
+
+<!-- We focused on the probability that a given subscriber will click on at least one link in a given newsletter. In addition to the variables used in the open probability model, -->
+
+<!-- * Trend over the date newsletter was sent out (2019-01-01 to 2020-12-31). -->
+<!-- * Whether newsletter was sent before or after start of the COVID pandemic on 2020-03-12. -->
+<!-- * Time of day newsletter was sent out (6:30 am to 8:40 pm). -->
+<!-- * Length of subject by number of characters. -->
+
+<!-- we also look at the following factors related to the content within the newsletter: -->
+
+<!-- * Number of words in newsletter. -->
+<!-- * Number of links (text or image) in newsletter. -->
+<!-- * Number of clickable pictures in newsletter. -->
+<!-- * Number of unclickable pictures in newsletter. -->
+
+Below are 5 example newsletters from the dataset, containing the four "content" variables mentioned above. The last variable, clicks, is the response variable of interest. 1 indicates that the subscriber clicked on any link in a given newsletter; 0 indicates that the subscriber didn't click on any link in a given newsletter.
+
+```{r}
+sample_idx <- c(5, 8, 25, 35, 47)
+
+kable(subset(weeklies1)[sample_idx,],
+      row.names = FALSE)
+```
+
+
+
 # Correlation of the Metrics
+
+The open percentage is 
+
+$$\mathrm{Open \ \%} = \frac{\mathrm{number \ of \ contacts \ who \ opened \ the \ email}}{\mathrm{number \ of \ contacts \ sent \ to}} \times 100\%$$
+
+The other metrics, i.e. clicks, bounces, and unsubscribes, are similarly defined.
 
 ```{r}
 metrics <- weeklies1[, names(weeklies1) %in% c("opened", "clicks", "bounces", "unsubscribes")]
@@ -159,11 +212,12 @@ summary(weeklies1$subject_length)
 ```
 
 ```{r}
-ggplot(data = weeklies1, aes(x = subject_length, y = opened)) + 
+ggplot(data = weeklies1, aes(x = subject_length, y = opened, col = covid)) + 
   geom_point() + 
   ggtitle("Open % by Subject Length") + 
   xlab("Subject Length in characters") +
-  ylab("Open %")
+  ylab("Open %") +
+  geom_smooth(aes(group = 1))
 ```
 
 <!-- ```{r} -->
@@ -180,19 +234,19 @@ Small speculation: if subject heading is too long, it may not fit in the email b
 
 
 
-# Modeling
+<!-- # Modeling -->
 
-```{r}
-weeklies1$covid <- factor(weeklies1$covid, levels = c("Before", "After"))
-```
+<!-- ```{r} -->
+<!-- weeklies1$covid <- factor(weeklies1$covid, levels = c("Before", "After")) -->
+<!-- ``` -->
 
-```{r}
-opens_lm <- lm(opened ~ datetime*covid + mins_since_midnight + subject_length, data = weeklies1)
-```
+<!-- ```{r} -->
+<!-- opens_lm <- lm(opened ~ datetime*covid + mins_since_midnight + subject_length, data = weeklies1) -->
+<!-- ``` -->
 
-```{r}
-summary(opens_lm)
-```
+<!-- ```{r} -->
+<!-- summary(opens_lm) -->
+<!-- ``` -->
 
 
 

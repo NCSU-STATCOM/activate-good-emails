@@ -61,7 +61,7 @@ We focused on the probability that a given subscriber will open a weekly newslet
 
 <!-- The top of the bars in the barplots and the dashed or shaded lines in the line graphs show the precision of the estimates (+/- 2 standard errors). For barplots, the black symbols on top of the bars -->
 
-Below are 10 sample observations from the dataset. The last variable, week_open, is the response variable of interest. 1 indicates that the subscriber opened the newsletter within the week; 0 indicates that the subscriber received the newsletter but didn't open it.
+Below are 10 sample observations from the dataset. Each row corresponds to one of the 622,614 newsletter-subscriber pairs. The last variable, week_open, is the response variable of interest. 1 indicates that the subscriber opened the newsletter within the week; 0 indicates that the subscriber received the newsletter but didn't open it.
 
 ```{r}
 set.seed(106)

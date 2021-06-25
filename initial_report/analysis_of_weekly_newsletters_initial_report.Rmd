@@ -7,14 +7,17 @@ output: pdf_document
 
 ## Questions of Interest
 
-* 
+* What are some general trends regarding the weekly newsletters' metrics (open, click, bounce and unsubscribe rates)? 
 
 ## Statistical Analysis
 
-* 
+* Correlations between the metrics
+* Scatterplots of the metrics vs. various factors
 
 ## Takeaways
 
+* Clicks are positively correlated with opens, but negatively correlated with unsubscribes.
+* The start of the COVID pandemic seemed to have caused a temporary spike in engagement.
 * The next two reports, "Trends in the Open Probability" and "Trends in the Click Probability," will delve further into how various factors affect the open and click rate. 
 
 
@@ -39,44 +42,42 @@ i_am("initial_report/analysis_of_weekly_newsletters_initial_report.Rmd")
 load(here("initial_report", "weeklies1.RData"))
 ```
 
-## Overview of the Data Used
+# Overview of the Data Used
 
-Newsletter level (as opposed to subscriber level)
+We focus on 54 newsletters, sent roughly weekly in the years 2019 and 2020. For this initial report, we look at four aggregated metrics for the newsletters: the open, click, bounce, and unsubscribe percentages.  
 
-We focus on 54 newsletters, sent roughly weekly in the years 2019 and 2020. For this initial report, we look at aggregate statistics for the newsletters. 
+The definition of the metrics are as follows:
 
-<!-- We focused on the probability that a given subscriber will click on at least one link in a given newsletter. In addition to the variables used in the open probability model, -->
+$$\mathrm{Open \ \%} = \frac{\mathrm{number \ of \ contacts \ who \ opened \ the \ newsletter}}{\mathrm{number \ of \ contacts \ sent \ to}} \times 100\%$$
 
-<!-- * Trend over the date newsletter was sent out (2019-01-01 to 2020-12-31). -->
-<!-- * Whether newsletter was sent before or after start of the COVID pandemic on 2020-03-12. -->
-<!-- * Time of day newsletter was sent out (6:30 am to 8:40 pm). -->
-<!-- * Length of subject by number of characters. -->
+$$\mathrm{Click \ \%} = \frac{\mathrm{number \ of \ contacts \ who \ clicked \ a \ link \ in \ the \ newsletter}}{\mathrm{number \ of \ contacts \ sent \ to}} \times 100\%$$
 
-<!-- we also look at the following factors related to the content within the newsletter: -->
+$$\mathrm{Bounce \ \%} = \frac{\mathrm{number \ of \ contacts \ who \ could \ not \ be \ reached}}{\mathrm{number \ of \ contacts \ sent \ to}} \times 100\%$$
 
-<!-- * Number of words in newsletter. -->
-<!-- * Number of links (text or image) in newsletter. -->
-<!-- * Number of clickable pictures in newsletter. -->
-<!-- * Number of unclickable pictures in newsletter. -->
+$$\mathrm{Unsubscribe \ \%} = \frac{\mathrm{number \ of \ contacts \ who \ used \ newsletter \ to \ unsubscribe}}{\mathrm{number \ of \ contacts \ sent \ to}} \times 100\%$$
 
-Below are 5 example newsletters from the dataset, containing the four "content" variables mentioned above. The last variable, clicks, is the response variable of interest. 1 indicates that the subscriber clicked on any link in a given newsletter; 0 indicates that the subscriber didn't click on any link in a given newsletter.
+We also examine the following characteristics of the newsletters:
+
+* Trend over the date newsletter was sent out (2019-01-01 to 2020-12-31).
+* Whether newsletter was sent before or after start of the COVID pandemic on 2020-03-12.
+* Time of day newsletter was sent out (6:30 am to 8:40 pm).
+* Length of subject by number of characters.
+
+Below are 5 example newsletters from the dataset, i.e. the 5th, 8th, 25th, 35th, and 47th newsletters sent out.
 
 ```{r}
 sample_idx <- c(5, 8, 25, 35, 47)
 
-kable(subset(weeklies1)[sample_idx,],
-      row.names = FALSE)
+kable(subset(weeklies1, select = c("datetime", "opened", "clicks", "bounces", "unsubscribes"))[sample_idx,],
+      row.names = TRUE)
+
+kable(subset(weeklies1, select = c("contacts_sent_to", "covid", "mins_since_midnight", "subject_length"))[sample_idx,],
+      row.names = TRUE)
 ```
 
 
 
 # Correlation of the Metrics
-
-The open percentage is 
-
-$$\mathrm{Open \ \%} = \frac{\mathrm{number \ of \ contacts \ who \ opened \ the \ email}}{\mathrm{number \ of \ contacts \ sent \ to}} \times 100\%$$
-
-The other metrics, i.e. clicks, bounces, and unsubscribes, are similarly defined.
 
 ```{r}
 metrics <- weeklies1[, names(weeklies1) %in% c("opened", "clicks", "bounces", "unsubscribes")]
@@ -86,6 +87,7 @@ metrics <- weeklies1[, names(weeklies1) %in% c("opened", "clicks", "bounces", "u
 ggpairs(metrics, title = "Correlogram of the Metrics")
 ```
 
+There are two significant correlations: a positive one between opens and clicks, and a negative one between unsubscribes and clicks. 
 
 
 
@@ -150,17 +152,17 @@ ggplot(data = weeklies1, aes(x = datetime, y = unsubscribes, col = covid)) +
 
 
 
-# Summary Statistics by Season
+<!-- # Summary Statistics by Season -->
 
-```{r}
-ggplot(data = weeklies1[weeklies1$covid == "Before",], aes(season, opened)) + 
-  geom_boxplot()
-```
+<!-- ```{r} -->
+<!-- ggplot(data = weeklies1[weeklies1$covid == "Before",], aes(season, opened)) +  -->
+<!--   geom_boxplot() -->
+<!-- ``` -->
 
-```{r}
-ggplot(data = weeklies1[weeklies1$covid == "After",], aes(season, opened)) + 
-  geom_boxplot()
-```
+<!-- ```{r} -->
+<!-- ggplot(data = weeklies1[weeklies1$covid == "After",], aes(season, opened)) +  -->
+<!--   geom_boxplot() -->
+<!-- ``` -->
 
 
 
@@ -205,11 +207,11 @@ There may be a slight upward trend.
 
 # Effect of Subject Headings
 
-Summary Statistics for number of characters within subject heading
+<!-- Summary Statistics for number of characters within subject heading -->
 
-```{r}
-summary(weeklies1$subject_length)
-```
+<!-- ```{r} -->
+<!-- summary(weeklies1$subject_length) -->
+<!-- ``` -->
 
 ```{r}
 ggplot(data = weeklies1, aes(x = subject_length, y = opened, col = covid)) + 
@@ -227,10 +229,6 @@ ggplot(data = weeklies1, aes(x = subject_length, y = opened, col = covid)) +
 <!--   xlab("Number of Words in Subject") + -->
 <!--   ylab("Open %") -->
 <!-- ``` -->
-
-Plotting by the number of words yields a similar plot. 
-
-Small speculation: if subject heading is too long, it may not fit in the email browser and thus lead to less opens. 
 
 
 

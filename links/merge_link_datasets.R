@@ -54,7 +54,7 @@ color_names = c(NA, "Mortar", "White", "Eastern Blue", "Teal",
                 "Slate Blue", "Cinnabar", "Tyrian Purple", "Chocolate",
                 "Falu Red", "Bahia", "Citron", "Mortar",
                 "Dim Gray", "Gamboge", "Black", "Tangerine",
-                "Mandarian Orange", "Eclipse", "Orange Peel", "Chocolate")
+                "Mandarin Orange", "Eclipse", "Orange Peel", "Chocolate")
 color_names_rgb = paste0(color_names, " ", font_colors)
 
 my_hash_table = new.env()

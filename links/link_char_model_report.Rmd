@@ -1,0 +1,207 @@
+---
+title: "Link_Char_Model"
+author: "Naomi Giertych"
+date: "6/18/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, fig.align = 'center', fig.width = 5, fig.height = 3)
+```
+
+# What characteristics make a link appealing to click on?
+
+In this report, we investigate the characteristics of a links that make it more likely to be clicked on. We focus on newsletters from January 2019 to December 2020. Before diving into these characteristics, we give a brief description of how the data used was obtained.
+
+## Data Description
+
+The data comes from a few sources: the CSV and raw text files generated from iContact and the HTML source code from the links in each of the newsletters. From the CSV files, we determine the unique number of times a link was clicked on. We define a unique click to be a unique combination of subscriber ID, newsletter date, and link; in other words, if a subscriber clicked on the same link from the same newsletter, we do not count that click. We also identify the time of day the newsletter was sent and whether it was before or after the COVID-19 pandemic was declared (03/20/20) from the CSV files. The raw text files are used to get an approximation of how far down the newletter the link is, e.g. a link that is about half-way down the newsletter would be estimated around 50%. Finally, we obtain style characteristics and whether the link was an image or had an image associated with it from the HTML source code.
+
+## Data Exploration
+
+Before fitting any models to the data, we explore how the number of clicks a link received depended on the variables mentioned above. We define the average number of times a link was clicked as the number of times the link was uniquely clicked, defined above, divided by the number of newsletters the link appeared in. It is important to note that in doing this, we do not control for how many times a link was used within the same newsletter. For each of the categorical variables, we graph the category and the average number of tiems a link was clicked below.
+
+```{r}
+########################################################################
+# Create a simple model between the link characteristics and the click count
+
+# see how the bar plots change when dividing by the number of contacts
+########################################################################
+library(ggplot2)
+library(chron)
+library(stats)
+library(gamlss)
+
+link_char_count <- read.csv("full_link_dataset.csv")
+
+# Note that a missing click count actually indicates no clicks and not missing
+link_char_count_date_clean <- link_char_count
+link_char_count_date_clean[is.na(link_char_count$clicks),]$clicks <- 0
+
+# correct the date sent column due to these "missing" click counts
+date_map <- unique(link_char_count[is.na(link_char_count$date_sent) == FALSE, cbind('date', 'date_sent')])
+colnames(date_map) <- c('date', 'date_sent_clean')
+  # convert to datetime object
+date_map$date_sent_clean <- strptime(date_map$date_sent_clean, "%m/%d/%y %H:%M:%S", tz = '')
+
+  # Add in an hour variable
+date_map$hour <- sapply(date_map$date_sent_clean, hours)
+
+  # Add in a COVID-19 indicator
+covid <- as.Date(strptime('03/12/20', '%m/%d/%y'))
+date_map$covid_ind <- as.Date(strptime(date_map$date, '%m/%d/%y')) < covid
+
+link_char_count_date_clean <- merge(link_char_count_date_clean, date_map)
+
+# remove missing link numbers and duplicate entries
+cond1 <- is.na(link_char_count_date_clean$link_num) == FALSE
+cond2 <- link_char_count_date_clean$dup_after_first == FALSE
+link_char_count_clean <- link_char_count_date_clean[(cond1) & (cond2),]
+
+# Add in a counter variable
+link_char_count_clean$count = 1
+
+# Split into image, text without image, and text with image
+link_char_count_clean$type = 'image only'
+link_char_count_clean[(link_char_count_clean$is_image == FALSE) & 
+                        (link_char_count_clean$image_assoc == FALSE),]$type = 'text only'
+link_char_count_clean[(link_char_count_clean$is_image == FALSE) & 
+                        (link_char_count_clean$image_assoc == TRUE),]$type = 'text and image'
+
+# Get the average number of times a link was clicked based on whether it was a picture or not
+prop_df <- aggregate(cbind(clicks, count) ~ type, data = link_char_count_clean, FUN = sum)
+prop_df$mean <- prop_df$clicks/prop_df$count
+ggplot(data = prop_df, aes(x = type, y = mean)) + geom_bar(stat = 'identity') +
+  labs(x = 'Type of Link', y = 'Average Number of Clicks')
+```
+
+In the bar plot above, the label 'image only' refers to links that only had a picture associated with it, 'text only' refers to links with only associated text, and 'text and image' refers to links with both an image and associated text. Based on the bar plot, it appears that a combination of text and pictures encourages people to click on a link.
+
+```{r}
+# Whether or not it was bolded
+prop_df <- aggregate(cbind(clicks, count) ~ bolded, data = link_char_count_clean, FUN = sum)
+prop_df$mean <- prop_df$clicks/prop_df$count
+ggplot(data = prop_df, aes(x = bolded, y = mean)) + geom_bar(stat = 'identity') +
+  labs(x = 'Bolded Link', y = 'Average Number of Clicks')
+```
+
+Based on the bar plot above, it appears the bolding the text associated with the link also increases the chance that someone clicks on it.
+
+```{r}
+# Were people more or less active during COVID?
+  # average number of times a link was clicked before and during COVID
+prop_df <- aggregate(cbind(clicks, count) ~ covid_ind, data = link_char_count_clean, FUN = sum)
+prop_df$mean <- prop_df$clicks/prop_df$count
+ggplot(data = prop_df, aes(x = covid_ind, y = mean)) + geom_bar(stat = 'identity') +
+  labs(x = 'During COVID?', y = 'Average Number of Clicks')
+```
+
+Based on the bar plot above, it seems COVID impacted how much subscribers choose to interact with the newsletters. This is not all that surprising given the challenges everyone was facing during the pandemic.
+
+In the next two bar plots, we focus on the top five text color choices across all newsletters and the top five text color choices that appeared in more than one newsletter.
+
+```{r}
+# top 5 colors overall
+prop_df <- aggregate(cbind(clicks, count) ~ color_name, data = link_char_count_clean, FUN = sum)
+prop_df$mean <- prop_df$clicks/prop_df$count
+prop_df <- na.omit(prop_df)
+top5 <- prop_df[order(-prop_df$mean),][1:5,]
+ggplot(data = top5, aes(x = color_name, y = mean)) + geom_bar(stat = 'identity') +
+  labs(x = 'Top 5 Colors Overall', y = 'Average Number of Clicks') + ylim(0, 120)
+```
+
+Any color of orange seems to grab people's attention! Mandarian Orange only appeared in the newletter promoting the Remote Volunteer Project: DIY Family Essentials Kits opportunity so it is tempting to think the large number of clicks this color received may have more to do with the highly-relatable project. However, this project was advertised in four different newsletters using links colored as cinnabar and falu red (both are different tints of red) and these other newsletters had less than 85 clicks each. While there are more factors at play than just the link color, the fact that the newsletters advertising the same opportunity in red got fewer clicks suggests that a text color of orange is more impactful.
+
+## Model Fitting
+
+```{r, include= FALSE}
+# Look at the distribution of the number of clicks
+ggplot(data = link_char_count_clean) + geom_histogram(aes(x = clicks))
+click_dist <- aggregate(count~clicks, data = link_char_count_clean, FUN = sum)
+
+# Look at the other variables
+pairs(link_char_count_clean[c('clicks', 'doc_prop', 'font_size', 'hour')])
+
+# Consider only links with text (text only or text and image)
+text_only <- link_char_count_clean[link_char_count_clean$type != 'image only',]
+text_only <- text_only[c('clicks', 'doc_prop', 'bolded', 'font_color', 'font_size',
+                         'hour', 'covid_ind', 'image_assoc')]
+text_only <- na.omit(text_only)
+
+# separate model for the duplicated links; may be less reliable because of the duplication issue -- appealling reason for fitting a separate model
+# check for interaction affects
+text_lm <- lm(clicks ~ doc_prop + bolded + font_color + font_size + hour + covid_ind + image_assoc,
+              data = text_only)
+
+ggplot() + geom_point(aes(text_only$clicks, text_lm$fitted.values)) + 
+  labs(title = 'Observed Number of Clicks vs. Fitted Values')
+
+plot(text_only$clicks, text_lm$fitted.values)
+
+# transform the number of clicks
+text_only$sqrt_click <- sqrt(text_only$clicks)
+
+text_lm_sqrt <- lm(sqrt_click ~ doc_prop + bolded + font_color + font_size + hour + covid_ind + image_assoc,
+                   data = text_only)
+
+plot(text_only$sqrt_click, text_lm$fitted.values)
+qqnorm(text_lm$residuals)
+qqline(text_lm$residuals)
+
+plot(text_only$doc_prop, text_lm$residuals)
+plot(text_only$font_size, text_lm$residuals)
+plot(text_only$hour, text_lm$residuals)
+
+# Check against a Poisson/Negative Binomial Link
+text_glm <- glm(clicks ~ doc_prop + bolded + font_color + font_size + hour + covid_ind + image_assoc,
+                family = quasipoisson(link = 'log'), data = text_only)
+
+plot(text_only$clicks, text_glm$fitted.values)
+```
+
+We attempted to fit a linear regression, a Poisson regression, and a Negative Binomial regression to the click data with no success. However, we found that if we divided the number of clicks by the number of subscribers each newsletter was sent to, a zero-inflated beta regression worked quite well. The beta regression allows us to model proportion data (data that's bounded between zero and one, non-inclusive); the "zero-inflated" in the name refers to extending the beta regression to include observations with a value of zero. The zero-inflated beta regression fits three parameters: mu, sigma, and nu. The mu variable corresponds to the mean of the click proportion (relative to the number of subscribers) and is modeled in a similar manner to simple linear regression.
+
+The variables in our model are the following: doc_prop, bolded, color, font_size, hour, covid_ind, imag_assoc. "doc_prop" is the proportion down the document a link is; in other words, a link that is about halfway down a newsletter will be about 50%. "bolded" indicates whether a link was bolded. "color" is the color of the link as determined by [https://www.color-blindness.com/color-name-hue/](https://www.color-blindness.com/color-name-hue/).
+
+Below we give a histogram of click proportion and the fitted model parameters for mu. From the table below, we see that where the link is in the document, whether the link is bolded, and the color of the link make a statistically signficant difference on whether the link is clicked or not. Additionally, we see the top five colors shown above are also statistically signficant as well as Charcoal and Falu Red.
+
+```{r}
+# divide the clicks by the number of subscribers given in weeklies1:contacts sent to
+# fit a beta model
+# load in data that contains the number of subscribers each time a newsletter was sent
+load('../initial_report/weeklies1.RData')
+
+# Keep only the variables we care about
+weeklies <-  weeklies1[c('datetime', 'contacts_sent_to')]
+
+# Add in a date variable to match the link_char dataset and merge the datasets
+weeklies$date2 <-  as.Date(weeklies$date)
+link_char_count_clean$date2 <-  as.Date(link_char_count_clean$date_sent_clean)
+link_counts_subs <-  merge(weeklies, link_char_count_clean, by = 'date2')
+
+# Divide the clicks by the number of subscribers
+link_counts_subs$click_prop <- link_counts_subs$clicks/link_counts_subs$contacts_sent_to
+
+# Consider only links with text (text only or text and image)
+text_only <- link_counts_subs[link_counts_subs$type != 'image only',]
+text_only <- text_only[c('click_prop', 'doc_prop', 'bolded', 'color_name', 'font_size',
+                         'hour', 'covid_ind', 'image_assoc')]
+text_only <- na.omit(text_only)
+
+# Histogram of the Click Proportion
+ggplot(data = text_only, aes(click_prop)) + geom_histogram() + ylim(0,150) + labs(x = 'Click Proportion')
+```
+
+```{r, include = FALSE}
+# Fitted model
+mod1<-gamlss(click_prop ~ doc_prop + bolded + color_name + font_size + hour + covid_ind + image_assoc,
+             sigma.formula=~1, nu.formula=~1, family=BEZI, data = text_only)
+
+# Check Diagnostics
+#plot(mod1)
+#summary mod1 is used to obtain the table below
+```
+
+\begin{center}
+\includegraphics{coef.png}
+\end{center}

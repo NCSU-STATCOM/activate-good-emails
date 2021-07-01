@@ -71,7 +71,7 @@ we also look at the following factors related to the content within the newslett
 * Number of clickable pictures in newsletter.
 * Number of unclickable pictures in newsletter.
 
-Below are 10 sample observations from the dataset, containing the four "content" variables mentioned above. The last variable, clicks, is the response variable of interest. 1 indicates that the subscriber clicked on any link in a given newsletter; 0 indicates that the subscriber didn't click on any link in a given newsletter.
+Below are 10 sample observations from the dataset, containing the four "content" variables mentioned above. Each row corresponds to one of the 622,614 newsletter-subscriber pairs. The last variable, clicks, is the response variable of interest. 1 indicates that the subscriber clicked on any link in a given newsletter; 0 indicates that the subscriber didn't click on any link in a given newsletter.
 
 ```{r}
 set.seed(106)

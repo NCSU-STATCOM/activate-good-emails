@@ -218,7 +218,7 @@ We attempted to fit a linear regression, a Poisson regression, and a Negative Bi
 
 The variables in our model are the following: doc_prop, bolded, color, font_size, hour, covid_ind, imag_assoc, and dup. "doc_prop" is the proportion down the document a link is; in other words, a link that is about halfway down a newsletter will be about 50%. "bolded" indicates whether a link was bolded. "color" is the color of the link as named by [https://www.color-blindness.com/color-name-hue/](https://www.color-blindness.com/color-name-hue/).
 
-Below we give a histogram of click proportion and the fitted model parameters for mu. From Table 1 below, we see that the link's location in the document, whether the link is bolded, and the color of the link make a statistically significant difference on whether the link is clicked or not. Additionally, we see the top five colors shown above are also statistically significant as well as Charcoal and Falu Red. Interestingly, the indicator for whether the variable is duplicated or not is not significant in the model. This lack of significance may be because the location of the link in the document also somewhat captures this information.
+Below we give a histogram of click proportion and the fitted model parameters for mu. From Table 1 below, we see that the link's location in the document, whether the link is bolded, and the color of the link make a statistically significant difference on whether the link is clicked or not. Additionally, we see the top five colors shown above are also statistically significant as well as Charcoal (67,67,67) and Falu Red (148,45,27). Interestingly, the indicator for whether the variable is duplicated or not is not significant in the model. This lack of significance may be because the location of the link in the document also somewhat captures this information.
 
 Finally, the mu coefficients given in the table below are, unfortunately, uninterpretable in their raw form. Luckily, a transformation of these coefficients gives the odds ratio of each variable. For the variables that are statistically significant at or below the 0.001 level, we give the odds ratios in Table 2. The odds ratio is interpreted as follows: When the location of the link in the document increases by one percentage point the odds of it being clicked is 0.46 times the odds of it being clicked in the original position. Overall, an odds ratio greater than one indicates a positive association and an odds ratio less than one indicates a negative association; note, these agree with the signs of the coefficients in Table 1.
 
@@ -284,3 +284,14 @@ The second word cloud below is for links that were for opportunities as defined 
 \end{center}
 
 As we can see, opportunities with baby chicks and sharing one's skills are significantly popular compared to other opportunities!
+
+
+
+# Appendix
+Here we provide the RGB values for all of the colors that were present in the news letter links. The names were assigned according to [https://www.color-blindness.com/color-name-hue/](https://www.color-blindness.com/color-name-hue/).
+
+```{r, echo = FALSE, warning= FALSE}
+library(knitr)
+color_names_rgb = read.table("color_names_rgb.tsv", skip=1)
+kable(color_names_rgb, col.names="Color Names")
+```

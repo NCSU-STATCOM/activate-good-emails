@@ -1,0 +1,44 @@
+---
+title: "Analysis of Activate Good Weekly Newsletters, 2019-2020"
+author: "STATCOM"
+site: bookdown::bookdown_site
+output:
+  bookdown::pdf_document2:
+    toc: yes
+    toc_depth: 2
+abstract: |
+  There are four main sections in this final report: 1) Exploration of Aggregated Metrics, 2) Trends in the Open Probability, 3) Trends in the Click Probability, and 4) Link Characteristics that Promote Clicks. Each main section is headed by an executive summary that describes i) the questions of interest that the main section aims to answer, ii) the statistical methods used to answer the questions, and iii) what we believe are the most pertinent takeaways of the main section. 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, fig.align = 'center', fig.width = 5, fig.height = 3)
+```
+
+\newpage
+
+```{r child = 'initial_report/analysis_of_weekly_newsletters_initial_report.Rmd'}
+```
+
+\newpage
+
+```{r child = 'open_click_models/open_probability_trends.Rmd'}
+```
+
+\newpage
+
+```{r child = 'open_click_models/click_probability_trends.Rmd'}
+```
+
+<!-- \newpage -->
+
+<!-- ```{r child = 'links/link_presentation.Rmd'} -->
+<!-- ``` -->
+
+\newpage
+
+<!-- ```{r setup II, include=FALSE} -->
+<!-- knitr::opts_chunk$set(echo = FALSE, message = FALSE, fig.align = 'center', fig.width = 5, fig.height = 3) -->
+<!-- ``` -->
+
+```{r child = 'links/LinkModelReportForDelivery.Rmd'}
+```

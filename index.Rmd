@@ -1,5 +1,5 @@
 ---
-title: "Analysis of Activate Good Weekly Newsletters, 2019-2020"
+title: "Analysis of 54 Activate Good Weekly Newsletters, 2019-2020"
 author: "STATCOM"
 site: bookdown::bookdown_site
 output:

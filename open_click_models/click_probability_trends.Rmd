@@ -4,10 +4,9 @@ author: "STATCOM"
 output: pdf_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-knitr::opts_chunk$set(message = FALSE)
-```
+<!-- ```{r setup, include=FALSE} -->
+<!-- knitr::opts_chunk$set(echo = FALSE, message = FALSE, fig.align = 'center', fig.width = 5, fig.height = 3) -->
+<!-- ``` -->
 
 ```{r}
 library(itsadug)
@@ -24,7 +23,7 @@ library(gglorenz)
 load("open_click_models/subscriber_clicks.RData")
 ```
 
-# Executive Summary
+# Trends in the Click Probability: Executive Summary
 
 ## Questions of Interest
 
@@ -51,7 +50,7 @@ load("open_click_models/subscriber_clicks.RData")
 
 \newpage
 
-# Trends in the Click Probability
+# Trends in the Click Probability: Report
 
 ## Overview of the Data Used
 
@@ -111,13 +110,13 @@ All plots show 95% confidence intervals of the estimates; two standard errors ab
 load("open_click_models/m3_clicks.RData")
 ```
 
-```{r, include = FALSE}
-summary(m3)
-```
+<!-- ```{r, include = FALSE} -->
+<!-- summary(m3) -->
+<!-- ``` -->
 
-```{r, include = FALSE}
-gam.check(m3, type = "deviance")
-```
+<!-- ```{r, include = FALSE} -->
+<!-- gam.check(m3, type = "deviance") -->
+<!-- ``` -->
 
 ```{r}
 expit <- function(x){
@@ -297,7 +296,7 @@ hour_dat$se <- sqrt(hour_dat$hour_prop * (1 - hour_dat$hour_prop) / colSums(hour
 
 The below barplot shows the proportion of subscribers that clicked on a link in the newsletter sent before the pandemic, given that the newsletter was sent to them within a specific time interval. There were no newsletters sent in three of the time intervals, so the bars are absent. 
 
-```{r, warning = F}
+```{r, warning = F, fig.width = 7, fig.height = 5}
 # ggplot(data = hour_dat, aes(x = Hour, fill = Opened)) + 
   # geom_bar(position = "fill")
 
@@ -322,7 +321,7 @@ The following plot shows the relative effect of the time of day the newsletter i
 It appears that there is a dip in the click probability at about 9 am, whereas there is a rise at about 1 pm.
 
 ```{r}
-plot(m3, select = 3, main = "Effect of Hour of Day on Click Probability, Before COVID", xlab = "Hour of Day", ylab = "Relative Effect", xaxt = "n", ylim = c(-1.5, 1.7), xlim = c(6.8, 16.5) * 60)
+plot(m3, select = 3, main = "Hour of Day, Before COVID", xlab = "Hour of Day", ylab = "Relative Effect", xaxt = "n", ylim = c(-1.5, 1.7), xlim = c(6.8, 16.5) * 60)
 
 axis(side = 1, at = seq(420, 1200, by = 60), labels = c(seq(7, 20, by = 1)))
 
@@ -347,7 +346,7 @@ plot_smooth(m3, view = "mins_since_midnight", cond = list(days_since_start = 334
                                                           subject_length = 66, 
                                                           covid = "Before"),
             transform = expit, hide.label = TRUE, 
-            main = "Click Probability vs. Hour of Day, given other covariates", xlab = "Hour of Day", ylab = "Probability", xaxt = "n", 
+            main = "Click Probability vs. Hour of Day, Before COVID", xlab = "Hour of Day", ylab = "Probability", xaxt = "n", 
             print.summary = FALSE, 
             ylim = ylim_span + 0, 
             xlim = c(6.8, 16.5) * 60)
@@ -389,7 +388,7 @@ hour_dat$se <- sqrt(hour_dat$hour_prop * (1 - hour_dat$hour_prop) / colSums(hour
 
 The below barplot shows the proportion of subscribers that clicked on a link in the newsletter sent during the pandemic, given that the newsletter was sent to them within a specific time interval. 
 
-```{r}
+```{r, fig.width = 7, fig.height = 5}
 # ggplot(data = hour_dat, aes(x = Hour, fill = Opened)) + 
   # geom_bar(position = "fill")
 ggplot(hour_dat, aes(x = hour_grp, y = hour_prop)) + 
@@ -411,7 +410,7 @@ ggplot(hour_dat, aes(x = hour_grp, y = hour_prop)) +
 The following plot shows the relative effect of the time of day the newsletter is sent out on the click probability during the pandemic. During the pandemic, the time of day the newsletter is sent has no discernible effect on the click probability. 
 
 ```{r}
-plot(m3, select = 4, main = "Effect of Hour of Day on Click Probability, During COVID", xlab = "Hour of Day", ylab = "Relative Effect", xaxt = "n", ylim = c(-1, 1))
+plot(m3, select = 4, main = "Hour of Day, During COVID", xlab = "Hour of Day", ylab = "Relative Effect", xaxt = "n", ylim = c(-1, 1))
 
 axis(side = 1, at = seq(420, 1200, by = 60), labels = c(seq(7, 20, by = 1)))
 
@@ -431,7 +430,7 @@ The above plot shows the partial effect of the time of day alone, without consid
 plot_smooth(m3, view = "mins_since_midnight", cond = list(days_since_start = 700, 
                                                           subject_length = 66),
             transform = expit, hide.label = TRUE, 
-            main = "Click Probability vs. Hour of Day, given other covariates", xlab = "Hour of Day", ylab = "Probability", xaxt = "n", 
+            main = "Click Probability vs. Hour of Day, During COVID", xlab = "Hour of Day", ylab = "Probability", xaxt = "n", 
             print.summary = FALSE, 
             ylim = ylim_span + 0)
 
@@ -466,7 +465,7 @@ length_dat$se <- sqrt(length_dat$length_prop * (1 - length_dat$length_prop) / co
 
 The below barplot shows the proportion of subscribers that clicked on a link in the newsletter, given that the subject length was within a specific interval. 
 
-```{r}
+```{r, fig.width = 7, fig.height = 5}
 ggplot(length_dat, aes(x = length_grp, y = length_prop)) +
   geom_bar(stat = "identity") +
   geom_errorbar(aes(ymin = length_prop - 2 * se, ymax = length_prop + 2 * se), width = 0.2) +
@@ -499,7 +498,7 @@ The above plot shows the partial effect of the subject length alone, without con
 plot_smooth(m3, view = "subject_length", cond = list(days_since_start = 700, 
                                                           mins_since_midnight = 630),
             transform = expit, hide.label = TRUE, 
-            main = "Click Probability vs. Subject Length, given other covariates", xlab = "Subject Length", ylab = "Probability", 
+            main = "Click Probability vs. Subject Length", xlab = "Subject Length", ylab = "Probability", 
             print.summary = FALSE, 
             ylim = ylim_span + 0)
 
@@ -534,7 +533,7 @@ wc_dat$se <- sqrt(wc_dat$wc_prop * (1 - wc_dat$wc_prop) / colSums(wc_tab))
 
 The below barplot shows the proportion of subscribers that clicked on a link in the newsletter, given that the newsletter word count was within a specific interval. 
 
-```{r}
+```{r, fig.width = 7, fig.height = 5}
 ggplot(wc_dat, aes(x = wc_grp, y = wc_prop)) +
   geom_bar(stat = "identity") +
   geom_errorbar(aes(ymin = wc_prop - 2 * se, ymax = wc_prop + 2 * se), width = 0.2) +
@@ -565,7 +564,7 @@ The above plot shows the partial effect of the word count alone, without conside
 plot_smooth(m3, view = "num_words", cond = list(days_since_start = 700, 
                                                           mins_since_midnight = 630),
             transform = expit, hide.label = TRUE, 
-            main = "Click Probability vs. Word Count, given other covariates", xlab = "Word Count", ylab = "Probability", 
+            main = "Click Probability vs. Word Count", xlab = "Word Count", ylab = "Probability", 
             print.summary = FALSE, 
             ylim = ylim_span + 0)
 
@@ -599,7 +598,7 @@ lc_dat$se <- sqrt(lc_dat$lc_prop * (1 - lc_dat$lc_prop) / colSums(lc_tab))
 
 The below barplot shows the proportion of subscribers that clicked on a link in the newsletter, given that the newsletter link count was within a specific interval. 
 
-```{r}
+```{r, fig.width = 7, fig.height = 5}
 ggplot(lc_dat, aes(x = lc_grp, y = lc_prop)) +
   geom_bar(stat = "identity") +
   geom_errorbar(aes(ymin = lc_prop - 2 * se, ymax = lc_prop + 2 * se), width = 0.2) +
@@ -630,7 +629,7 @@ The above plot shows the partial effect of the link count alone, without conside
 plot_smooth(m3, view = "num_links", cond = list(days_since_start = 700, 
                                                           mins_since_midnight = 630),
             transform = expit, hide.label = TRUE, 
-            main = "Click Probability vs. Link Count, given other covariates", xlab = "Link Count", ylab = "Probability", 
+            main = "Click Probability vs. Link Count", xlab = "Link Count", ylab = "Probability", 
             print.summary = FALSE, 
             ylim = ylim_span + 0)
 
@@ -666,7 +665,7 @@ cpc_dat$se <- sqrt(cpc_dat$cpc_prop * (1 - cpc_dat$cpc_prop) / colSums(cpc_tab))
 
 The below barplot shows the proportion of subscribers that clicked on a link in the newsletter, given the number of clickable pictures in the newsletter. 
 
-```{r, warning = F}
+```{r, warning = F, fig.width = 7, fig.height = 5}
 ggplot(cpc_dat, aes(x = cpc_grp, y = cpc_prop)) +
   geom_bar(stat = "identity") +
   geom_errorbar(aes(ymin = cpc_prop - 2 * se, ymax = cpc_prop + 2 * se), width = 0.2) +
@@ -679,7 +678,7 @@ ggplot(cpc_dat, aes(x = cpc_grp, y = cpc_prop)) +
 The following plot shows the relative effect of the number of clickable pictures on the click probability. The optimal number of clickable pictures appears to be 8. 
 
 ```{r}
-plot(m3, select = 8, main = "Effect of Number of Clickable Pictures on Click Probability", xlab = "Number of Clickable Pictures", ylab = "Relative Effect", ylim = c(-1, 1))
+plot(m3, select = 8, main = "Effect of # of Clickable Pics on Click Probability", xlab = "Number of Clickable Pictures", ylab = "Relative Effect", ylim = c(-1, 1))
 
 abline(h = 0, col = "red")
 
@@ -699,7 +698,7 @@ The above plot shows the partial effect of the number of clickable pictures alon
 plot_smooth(m3, view = "num_clickable_pics", cond = list(days_since_start = 700, 
                                                           mins_since_midnight = 630),
             transform = expit, hide.label = TRUE, 
-            main = "Click Probability vs. Number of Clickable Pictures", xlab = "Number of Clickable Pictures", ylab = "Probability", 
+            main = "Click Probability vs. # of Clickable Pics", xlab = "Number of Clickable Pictures", ylab = "Probability", 
             print.summary = FALSE, 
             ylim = ylim_span + 0)
 
@@ -735,7 +734,7 @@ upc_dat$se <- sqrt(upc_dat$upc_prop * (1 - upc_dat$upc_prop) / colSums(upc_tab))
 
 The below barplot shows the proportion of subscribers that clicked on a link in the newsletter, given the number of unclickable pictures in the newsletter. 
 
-```{r, warning = F}
+```{r, warning = F, fig.width = 7, fig.height = 5}
 ggplot(upc_dat, aes(x = upc_grp, y = upc_prop)) +
   geom_bar(stat = "identity") +
   geom_errorbar(aes(ymin = upc_prop - 2 * se, ymax = upc_prop + 2 * se), width = 0.2) +
@@ -748,7 +747,7 @@ ggplot(upc_dat, aes(x = upc_grp, y = upc_prop)) +
 The following plot shows the relative effect of the number of unclickable pictures on the click probability. The number of unclickable pictures does not have a significant effect on click probability
 
 ```{r}
-plot(m3, select = 9, main = "Effect of Number of Unclickable Pictures on Click Probability", xlab = "Number of Unclickable Pictures", ylab = "Relative Effect", ylim = c(-1, 1))
+plot(m3, select = 9, main = "Effect of # of Unclickable Pics on Click Probability", xlab = "Number of Unclickable Pictures", ylab = "Relative Effect", ylim = c(-1, 1))
 
 abline(h = 0, col = "red")
 
@@ -768,7 +767,7 @@ The above plot shows the partial effect of the number of unclickable pictures al
 plot_smooth(m3, view = "num_unclickable_pics", cond = list(days_since_start = 700, 
                                                           mins_since_midnight = 630),
             transform = expit, hide.label = TRUE, 
-            main = "Click Probability vs. Number of Unclickable Pictures", xlab = "Number of Unclickable Pictures", ylab = "Probability", 
+            main = "Click Probability vs. # of Unclickable Pics", xlab = "Number of Unclickable Pictures", ylab = "Probability", 
             print.summary = FALSE, 
             ylim = ylim_span + 0)
 

@@ -4,10 +4,9 @@ author: "STATCOM"
 output: pdf_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-knitr::opts_chunk$set(message = FALSE)
-```
+<!-- ```{r setup, include=FALSE} -->
+<!-- knitr::opts_chunk$set(echo = FALSE, message = FALSE, fig.align = 'center', fig.width = 5, fig.height = 3) -->
+<!-- ``` -->
 
 ```{r}
 library(itsadug)
@@ -24,7 +23,7 @@ library(gglorenz)
 load("open_click_models/subscriber_open.RData")
 ```
 
-# Executive Summary
+# Trends in the Open Probability: Executive Summary
 
 ## Questions of Interest
 
@@ -46,7 +45,7 @@ load("open_click_models/subscriber_open.RData")
 
 \newpage
 
-# Trends in the Open Probability
+# Trends in the Open Probability: Report
 
 ## Overview of the Data Used
 
@@ -106,13 +105,13 @@ All plots show 95% confidence intervals of the estimates; two standard errors ab
 load("open_click_models/m4.RData")
 ```
 
-```{r, include = FALSE}
-summary(m4)
-```
+<!-- ```{r, include = FALSE} -->
+<!-- summary(m4) -->
+<!-- ``` -->
 
-```{r, include = FALSE}
-gam.check(m4)
-```
+<!-- ```{r, include = FALSE} -->
+<!-- gam.check(m4) -->
+<!-- ``` -->
 
 ```{r}
 expit <- function(x){
@@ -282,7 +281,7 @@ hour_dat$se <- sqrt(hour_dat$hour_prop * (1 - hour_dat$hour_prop) / colSums(hour
 
 The below barplot shows the proportion of subscribers that opened the newsletter sent before the pandemic, given that the newsletter was sent to them within a specific time interval. There were no newsletters sent in three of the time intervals, so the bars are absent. 
 
-```{r, warning = F}
+```{r, warning = F, fig.width = 7, fig.height = 5}
 # ggplot(data = hour_dat, aes(x = Hour, fill = Opened)) + 
   # geom_bar(position = "fill")
 
@@ -305,7 +304,7 @@ ggplot(hour_dat, aes(x = hour_grp, y = hour_prop)) +
 The following plot shows the relative effect of the time of day the newsletter is sent out on the open probability (a negative relative effect corresponds to a decrease in probability, and a positive relative effect corresponds to an increase in probability) before the pandemic. It appears that there is a dip in the open probability at about 10 am.
 
 ```{r}
-plot(m4, select = 3, main = "Effect of Hour of Day on Open Probability, Before COVID", xlab = "Hour of Day", ylab = "Relative Effect", xaxt = "n", ylim = c(-1.5, 1.5), xlim = c(6.8, 16.5) * 60)
+plot(m4, select = 3, main = "Hour of Day, Before COVID", xlab = "Hour of Day", ylab = "Relative Effect", xaxt = "n", ylim = c(-1.5, 1.5), xlim = c(6.8, 16.5) * 60)
 
 axis(side = 1, at = seq(420, 1200, by = 60), labels = c(seq(7, 20, by = 1)))
 
@@ -324,7 +323,7 @@ plot_smooth(m4, view = "mins_since_midnight", cond = list(days_since_start = 334
                                                           subject_length = 66, 
                                                           covid = "Before"),
             transform = expit, hide.label = TRUE, 
-            main = "Open Probability vs. Hour of Day, given other covariates", xlab = "Hour of Day", ylab = "Probability", xaxt = "n", 
+            main = "Open Probability vs. Hour of Day, Before COVID", xlab = "Hour of Day", ylab = "Probability", xaxt = "n", 
             print.summary = FALSE, 
             ylim = ylim_span + 0, 
             xlim = c(6.8, 16.5) * 60)
@@ -364,7 +363,7 @@ hour_dat$se <- sqrt(hour_dat$hour_prop * (1 - hour_dat$hour_prop) / colSums(hour
 
 The below barplot shows the proportion of subscribers that opened the newsletter during the pandemic, given that the newsletter was sent to them within a specific time interval. The barplot suggests that there are two time intervals with higher open proportions. 
 
-```{r}
+```{r, fig.width = 7, fig.height = 5}
 # ggplot(data = hour_dat, aes(x = Hour, fill = Opened)) + 
   # geom_bar(position = "fill")
 ggplot(hour_dat, aes(x = hour_grp, y = hour_prop)) + 
@@ -386,7 +385,7 @@ ggplot(hour_dat, aes(x = hour_grp, y = hour_prop)) +
 The following plot shows the relative effect of the time of day the newsletter is sent out on the open probability during the pandemic. It appears that the optimal times are about 10:30 in the morning and 17:10 in the evening. 
 
 ```{r}
-plot(m4, select = 4, main = "Effect of Hour of Day on Open Probability, During COVID", xlab = "Hour of Day", ylab = "Relative Effect", xaxt = "n", ylim = c(-1, 1))
+plot(m4, select = 4, main = "Hour of Day, During COVID", xlab = "Hour of Day", ylab = "Relative Effect", xaxt = "n", ylim = c(-1, 1))
 
 axis(side = 1, at = seq(420, 1200, by = 60), labels = c(seq(7, 20, by = 1)))
 
@@ -406,7 +405,7 @@ The above plot shows the partial effect of the time of day alone, without consid
 plot_smooth(m4, view = "mins_since_midnight", cond = list(days_since_start = 700, 
                                                           subject_length = 66),
             transform = expit, hide.label = TRUE, 
-            main = "Open Probability vs. Hour of Day, given other covariates", xlab = "Hour of Day", ylab = "Probability", xaxt = "n", 
+            main = "Open Probability vs. Hour of Day, During COVID", xlab = "Hour of Day", ylab = "Probability", xaxt = "n", 
             print.summary = FALSE, 
             ylim = ylim_span + 0)
 
@@ -445,7 +444,7 @@ length_dat$se <- sqrt(length_dat$length_prop * (1 - length_dat$length_prop) / co
 
 The below barplot shows the proportion of subscribers that opened the newsletter, given that the subject length was within a specific interval. 
 
-```{r}
+```{r, fig.width = 7, fig.height = 5}
 ggplot(length_dat, aes(x = length_grp, y = length_prop)) +
   geom_bar(stat = "identity") +
   geom_errorbar(aes(ymin = length_prop - 2 * se, ymax = length_prop + 2 * se), width = 0.2) +
@@ -472,7 +471,7 @@ The above plot shows the partial effect of the subject length alone, without con
 plot_smooth(m4, view = "subject_length", cond = list(days_since_start = 700, 
                                                           mins_since_midnight = 630),
             transform = expit, hide.label = TRUE, 
-            main = "Open Probability vs. Subject Length, given other covariates", xlab = "Subject Length", ylab = "Probability", 
+            main = "Open Probability vs. Subject Length", xlab = "Subject Length", ylab = "Probability", 
             print.summary = FALSE, 
             ylim = ylim_span + 0)
 ```

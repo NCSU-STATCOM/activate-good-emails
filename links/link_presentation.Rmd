@@ -1,15 +1,13 @@
 ---
-title: "Unique Link Clicks"
-author: "Jimmy Hickey"
-date: "1/17/2021"
+title: "&nbsp;"
 output: pdf_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+\pagenumbering{gobble}
 
-# Opportunity link click
+<!-- ```{r setup, include=FALSE} -->
+<!-- knitr::opts_chunk$set(echo = TRUE) -->
+<!-- ``` -->
 
 This table shows the number of unique people that clicked each "opportunity link" (https://activategood.org/opportunity/####) in the newsletters. Click the title of the link to go to the opportunity page.
 

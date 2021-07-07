@@ -3,11 +3,11 @@ title: "Analysis of Weekly Newsletters: Initial Report"
 output: pdf_document
 ---
 
-# Executive Summary
+# Exploration of Aggregated Metrics: Executive Summary
 
 ## Questions of Interest
 
-* What are some general trends regarding the weekly newsletters' metrics (open, click, bounce and unsubscribe rates)? 
+* What are some general trends regarding the weekly newsletters' aggregated metrics (open, click, bounce and unsubscribe rates)? 
 
 ## Statistical Analysis
 
@@ -22,10 +22,9 @@ output: pdf_document
 
 
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-knitr::opts_chunk$set(message = FALSE)
-```
+<!-- ```{r setup, include=FALSE} -->
+<!-- knitr::opts_chunk$set(echo = FALSE, message = FALSE, fig.align = 'center', fig.width = 5, fig.height = 3) -->
+<!-- ``` -->
 
 ```{r}
 library(ggplot2)
@@ -42,7 +41,9 @@ i_am("initial_report/analysis_of_weekly_newsletters_initial_report.Rmd")
 load(here("initial_report", "weeklies1.RData"))
 ```
 
-# Overview of the Data Used
+# Exploration of Aggregated Metrics: Report
+
+## Overview of the Data Used
 
 We focus on 54 newsletters, sent roughly weekly in the years 2019 and 2020. For this initial report, we look at four aggregated metrics for the newsletters: the open, click, bounce, and unsubscribe percentages.  
 
@@ -77,13 +78,13 @@ kable(subset(weeklies1, select = c("contacts_sent_to", "covid", "mins_since_midn
 
 
 
-# Correlation of the Metrics
+## Correlation of the Metrics
 
 ```{r}
 metrics <- weeklies1[, names(weeklies1) %in% c("opened", "clicks", "bounces", "unsubscribes")]
 ```
 
-```{r}
+```{r, fig.width = 7, fig.height = 5}
 ggpairs(metrics, title = "Correlogram of the Metrics")
 ```
 
@@ -91,9 +92,9 @@ There are two significant correlations: a positive one between opens and clicks,
 
 
 
-# Summary Statistics over Time, 2019-2020
+## Summary Statistics over Time, 2019-2020
 
-```{r}
+```{r, fig.width = 7, fig.height = 5}
 ggplot(data = weeklies1, aes(x = datetime, y = contacts_sent_to)) + 
   geom_point() + 
   ggtitle("Number of Contacts Sent To over Time, 2019-2020") + 
@@ -107,7 +108,7 @@ ggplot(data = weeklies1, aes(x = datetime, y = contacts_sent_to)) +
 
 When did the pandemic start changing things? The March 12 weekly newsletter was the first one to mention the COVID-19 pandemic and remote volunteering opportunities. 
 
-```{r}
+```{r, fig.width = 7, fig.height = 5}
 ggplot(data = weeklies1, aes(x = datetime, y = opened, col = covid)) + 
   geom_point() + 
   ggtitle("Open % over Time, 2019-2020") + 
@@ -124,7 +125,7 @@ There is a spike in the open % after March.
 
 
 
-```{r}
+```{r, fig.width = 7, fig.height = 5}
 ggplot(data = weeklies1, aes(x = datetime, y = clicks, col = covid)) + 
   geom_point() + 
   ggtitle("Click % over Time, 2019-2020") + 
@@ -138,7 +139,7 @@ ggplot(data = weeklies1, aes(x = datetime, y = clicks, col = covid)) +
 
 
 
-```{r}
+```{r, fig.width = 7, fig.height = 5}
 ggplot(data = weeklies1, aes(x = datetime, y = unsubscribes, col = covid)) + 
   geom_point() + 
   ggtitle("Unsubscribe % over Time, 2019-2020") + 
@@ -166,7 +167,7 @@ ggplot(data = weeklies1, aes(x = datetime, y = unsubscribes, col = covid)) +
 
 
 
-# Summary Statistics throughout a Day
+## Summary Statistics throughout a Day
 
 ```{r}
 # extracting the time
@@ -205,7 +206,7 @@ There may be a slight upward trend.
 
 
 
-# Effect of Subject Headings
+## Effect of Subject Headings
 
 <!-- Summary Statistics for number of characters within subject heading -->
 

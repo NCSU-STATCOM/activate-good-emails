@@ -3,6 +3,8 @@ Analyze weekly newsletters for factors that affect the rate of opens/clicks.
 
 We focus on 54 weekly newsletters sent during the years 2019 and 2020.
 
+See FINAL_REPORT.pdf, which is the deliverable containing all of our work on this project.
+
 # Data
 
 ## Newsletters

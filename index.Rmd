@@ -1,6 +1,6 @@
 ---
 title: "Analysis of 54 Activate Good Weekly Newsletters, 2019-2020"
-author: "STATCOM"
+author: "STATCOM: Alvin Sheng, Naomi Giertych, Jimmy Hickey"
 site: bookdown::bookdown_site
 output:
   bookdown::pdf_document2:

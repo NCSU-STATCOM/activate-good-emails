@@ -10,3 +10,5 @@ activate_good_project.Rproj
 open_click_models/m4_models/
 
 open_click_models/m*.RData
+
+!open_click_models/m3_clicks.RData

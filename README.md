@@ -18,6 +18,8 @@ In csv/intermediate/, there is all_months_201920_dens.csv, which contains desens
 
 There is also plain_text_ft_engineering.R and html_ft_engineering.R, which will extract useful features from the plain-text and html, respectively.
 
+Note: All sensitive data was removed with the BFG Repo-Cleaner.
+
 ## Donor Newsletters
 
 In the donor_newsletters folder, there are the plain-text and html files for five donor newsletters, which started on August 2020 and are sent out monthly. Analyzing these is of secondary interest.
